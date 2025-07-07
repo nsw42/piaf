@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<h1>{{.RequestPath}}</h1>
+<ul>
+{{/* directories first */}}
+{{- if ne .RequestPath "/" -}}
+<li><a href="..">(up)</a></li>
+{{end}}
+
+{{- range .MediaDir.SubDirectories }}
+<li><a href="{{.RelativePath}}">{{.Leaf}}</a></li>
+{{- end -}}
+
+{{- range .MediaDir.Files }}
+<li>{{.DisplayName}} ({{.Duration}})</li>
+{{- end }}
+</ul>
+</body>
+</html>

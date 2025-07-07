@@ -1,0 +1,126 @@
+package main
+
+import (
+	"html/template"
+	"log"
+	"net/http"
+	"net/url"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+func ConfigureRouter() *gin.Engine {
+	router := gin.Default()
+	router.GET("/*path", getPageHandler)
+	router.PUT("/play/*path", playHandler)
+	router.PUT("/player/pause", pauseHandler)
+	router.PUT("/player/resume", resumeHandler)
+	return router
+}
+
+func getUriPathElements(c *gin.Context) (string, []string) {
+	// basically splits on /, but removes empty elements, to ensure that
+	// http://server/path//subdir doesn't cause headaches
+	pathElts := make([]string, 0)
+	path := c.Param("path")
+	path, err := url.QueryUnescape(path)
+	if err != nil {
+		return "", pathElts
+	}
+
+	for elt := range strings.SplitSeq(path, "/") {
+		if elt != "" {
+			pathElts = append(pathElts, elt)
+		}
+	}
+
+	return path, pathElts
+}
+
+func findMediaDir(pathElts []string) *MediaDirectory {
+	// pathElts must only consist of the directories:
+	// any trailing file must have been removed by the caller
+	search := Media
+	for _, elt := range pathElts {
+		var ok bool
+		search, ok = search.SubDirectories[elt]
+		if !ok {
+			return nil
+		}
+	}
+	return search
+}
+
+func getPageHandler(c *gin.Context) {
+	path, pathElts := getUriPathElements(c)
+
+	mediaDir := findMediaDir(pathElts)
+	// traverse our media tree looking for the requested directory
+	if mediaDir == nil {
+		c.String(http.StatusNotFound, path+" not found")
+		return
+	}
+
+	// TODO: Move template loading back into ConfigureRouter()
+	PageTemplate, err := template.ParseFiles("index.templ")
+	if err != nil || PageTemplate == nil {
+		log.Println("Unable to read template index.templ")
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	pageArgs := struct {
+		RequestPath string
+		MediaDir    *MediaDirectory
+	}{
+		RequestPath: path,
+		MediaDir:    mediaDir,
+	}
+	err = PageTemplate.Execute(c.Writer, pageArgs)
+	if err != nil {
+		log.Println("Failed executing template:", err)
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
+func playHandler(c *gin.Context) {
+	_, pathElts := getUriPathElements(c)
+	if len(pathElts) == 0 {
+		// No file to play
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	mediaDir := findMediaDir(pathElts[:len(pathElts)-1])
+	file := mediaDir.Files[pathElts[len(pathElts)-1]]
+	if file == nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	MediaPlayer.Play(file.Path)
+
+	c.Status(http.StatusNoContent)
+}
+
+func pauseHandler(c *gin.Context) {
+	if MediaPlayer.State == PlayerStatePlaying {
+		MediaPlayer.Pause()
+		c.Status(http.StatusNoContent)
+	} else {
+		c.Status(http.StatusConflict)
+	}
+}
+
+func resumeHandler(c *gin.Context) {
+	if MediaPlayer.State == PlayerStatePaused {
+		MediaPlayer.Resume()
+		c.Status(http.StatusNoContent)
+	} else {
+		c.Status(http.StatusConflict)
+	}
+}

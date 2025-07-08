@@ -12,10 +12,12 @@ import (
 
 func ConfigureRouter() *gin.Engine {
 	router := gin.Default()
-	router.GET("/*path", getPageHandler)
+	router.GET("/", func(c *gin.Context) { c.Redirect(http.StatusMovedPermanently, "/media/") })
+	router.GET("/media/*path", getPageHandler)
 	router.PUT("/play/*path", playHandler)
 	router.PUT("/player/pause", pauseHandler)
 	router.PUT("/player/resume", resumeHandler)
+	router.Static("/assets", "./assets")
 	return router
 }
 

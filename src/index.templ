@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+<link href="/assets/bootstrap.min.css" rel="stylesheet">
+<script src="/assets/bootstrap.bundle.min.js"></script>
 </head>
 <body>
 <h1>{{.RequestPath}}</h1>
@@ -11,7 +13,7 @@
 {{end}}
 
 {{- range .MediaDir.SubDirectories }}
-<li><a href="{{.RelativePath}}">{{.Leaf}}</a></li>
+<li><a href="/media/{{.RelativePath}}/">{{.Leaf}}</a></li>
 {{- end -}}
 
 {{- range .MediaDir.Files }}

@@ -2,23 +2,52 @@
 <html>
 <head>
 <link href="/assets/bootstrap.min.css" rel="stylesheet">
+<link href="/assets/piaf.css" rel="stylesheet">
 <script src="/assets/bootstrap.bundle.min.js"></script>
+<script src="/assets/piaf.js"></script>
 </head>
 <body>
-<h1>{{.RequestPath}}</h1>
-<ul>
-{{/* directories first */}}
-{{- if ne .RequestPath "/" -}}
-<li><a href="..">(up)</a></li>
-{{end}}
 
-{{- range .MediaDir.SubDirectories }}
-<li><a href="/media/{{.RelativePath}}/">{{.Leaf}}</a></li>
-{{- end -}}
+<nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark">
+  <div class="container-fluid d-flex justify-content-between">
+    <a class="navbar-brand border border-0" href="/media">Piaf</a>
+    <span class="navbar-nav border border-0 navbar-text h1">
+      {{- range .RequestPathElts -}}
+        <span class="banner-path-item">{{.}}</span>  <!-- TODO: Make these links -->
+      {{else}}
+        <span>Root</span>
+      {{end}}
+    </span>
+    <span></span>
+  </div>
+</nav>
 
-{{- range .MediaDir.Files }}
-<li>{{.DisplayName}} ({{.Duration}})</li>
-{{- end }}
-</ul>
+<div class="container">
+  {{/* the main content */}}
+
+  <table class="piaf-media-table table table-striped">
+    <tbody>
+      {{/* directories first */}}
+      {{- if ne .RequestPath "/" -}}
+        <tr><td><a href="..">(up)</a></td></tr>
+      {{end}}
+
+      {{- range .MediaDir.SubDirectories }}
+        <tr><td><a href="/media/{{.RelativePath}}/">{{.Leaf}}</a></td></tr>
+      {{- end -}}
+
+      {{- range .MediaDir.Files }}
+        <tr><td>
+          <button type="button" class="btn btn-link piaf-play-file" data-file="{{.RelativePath}}">
+            {{.DisplayName}} ({{.Duration}})
+          </button>
+        </td></tr>
+      {{- end }}
+    </tbody>
+  </table>
+
+</div>
+
+<script>initPiaf();</script>
 </body>
 </html>

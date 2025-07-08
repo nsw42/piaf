@@ -1,0 +1,13 @@
+.banner-path-item:not(:first-child)::before {
+    content: ">";
+    margin-left: 8px;
+    margin-right: 8px;
+}
+
+nav + div {
+    margin-top: 64px;
+}
+
+.piaf-media-table button {
+  --bs-btn-padding-y: 0px;
+}

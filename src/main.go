@@ -17,9 +17,10 @@ type CommandLineArguments struct {
 }
 
 type MediaFile struct {
-	DisplayName string // the leaf, with file extension removed
-	Path        string // the full path (relative to the roto media parent directory)
-	Duration    string // extracted from ffmpeg output
+	DisplayName  string // the leaf, with file extension removed
+	Path         string // the full path
+	RelativePath string // the pull path relative to the root media parent directory
+	Duration     string // extracted from ffmpeg output
 }
 
 type MediaDirectory struct {
@@ -84,13 +85,18 @@ func readMediaDir(root, parent string) *MediaDirectory {
 				rtn.SubDirectories[file.Name()] = subdir
 			}
 		} else {
+			relativePath, err = filepath.Rel(root, subPath)
+			if err != nil {
+				log.Fatal(err)
+			}
 			ext := filepath.Ext(fileName)
 			switch ext {
 			case ".mp3": // , ".m4a"
 				displayName := strings.TrimSuffix(fileName, ext)
 				rtn.Files[fileName] = &MediaFile{
-					DisplayName: displayName,
-					Path:        subPath,
+					DisplayName:  displayName,
+					Path:         subPath,
+					RelativePath: relativePath,
 				}
 			}
 		}

@@ -14,7 +14,7 @@ func ConfigureRouter() *gin.Engine {
 	router := gin.Default()
 	router.GET("/", func(c *gin.Context) { c.Redirect(http.StatusMovedPermanently, "/media/") })
 	router.GET("/media/*path", getPageHandler)
-	router.PUT("/play/*path", playHandler)
+	router.PUT("/player/play/*path", playHandler)
 	router.PUT("/player/pause", pauseHandler)
 	router.PUT("/player/resume", resumeHandler)
 	router.Static("/assets", "./assets")
@@ -73,11 +73,13 @@ func getPageHandler(c *gin.Context) {
 	}
 
 	pageArgs := struct {
-		RequestPath string
-		MediaDir    *MediaDirectory
+		RequestPath     string
+		RequestPathElts []string
+		MediaDir        *MediaDirectory
 	}{
-		RequestPath: path,
-		MediaDir:    mediaDir,
+		RequestPath:     path,
+		RequestPathElts: pathElts,
+		MediaDir:        mediaDir,
 	}
 	err = PageTemplate.Execute(c.Writer, pageArgs)
 	if err != nil {

@@ -18,8 +18,9 @@ const (
 )
 
 type Player struct {
-	State   PlayerState
-	Control *beep.Ctrl
+	State      PlayerState
+	Control    *beep.Ctrl
+	NowPlaying string
 }
 
 func NewPlayer() *Player {

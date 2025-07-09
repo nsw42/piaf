@@ -10,6 +10,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type GetStatusResponse struct {
+	Status     string  `json:"state"`
+	NowPlaying *string `json:"now_playing"`
+}
+
 func ConfigureRouter() *gin.Engine {
 	router := gin.Default()
 	router.GET("/", func(c *gin.Context) { c.Redirect(http.StatusMovedPermanently, "/media/") })
@@ -17,6 +22,7 @@ func ConfigureRouter() *gin.Engine {
 	router.PUT("/player/play/*path", playHandler)
 	router.PUT("/player/pause", pauseHandler)
 	router.PUT("/player/resume", resumeHandler)
+	router.GET("/player/status", getPlayerStatusHandler)
 	router.Static("/assets", "./assets")
 	return router
 }
@@ -91,8 +97,33 @@ func getPageHandler(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+func playerStateString(state PlayerState) string {
+	switch state {
+	case PlayerStateStopped:
+		return "stopped"
+	case PlayerStatePlaying:
+		return "playing"
+	case PlayerStatePaused:
+		return "paused"
+	default:
+		return "unknown"
+	}
+}
+
+func getPlayerStatusHandler(c *gin.Context) {
+	var nowPlaying *string = nil
+	if MediaPlayer.NowPlaying != "" {
+		nowPlaying = &MediaPlayer.NowPlaying
+	}
+	response := GetStatusResponse{
+		Status:     playerStateString(MediaPlayer.State),
+		NowPlaying: nowPlaying,
+	}
+	c.JSON(http.StatusOK, response)
+}
+
 func playHandler(c *gin.Context) {
-	_, pathElts := getUriPathElements(c)
+	displayPath, pathElts := getUriPathElements(c)
 	if len(pathElts) == 0 {
 		// No file to play
 		c.Status(http.StatusNotFound)
@@ -107,6 +138,7 @@ func playHandler(c *gin.Context) {
 	}
 
 	MediaPlayer.Play(file.Path)
+	MediaPlayer.NowPlaying = displayPath
 
 	c.Status(http.StatusNoContent)
 }

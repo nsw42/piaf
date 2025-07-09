@@ -3,6 +3,7 @@
 <head>
 <link href="/assets/bootstrap.min.css" rel="stylesheet">
 <link href="/assets/piaf.css" rel="stylesheet">
+<script src="https://kit.fontawesome.com/b06f37c98e.js" crossorigin="anonymous"></script>
 <script src="/assets/bootstrap.bundle.min.js"></script>
 <script src="/assets/piaf.js"></script>
 </head>
@@ -18,7 +19,7 @@
         <span>Root</span>
       {{end}}
     </span>
-    <span></span>
+    <span class="navbar-brand opacity-0">Piaf</span>
   </div>
 </nav>
 
@@ -45,7 +46,24 @@
       {{- end }}
     </tbody>
   </table>
+</div>
 
+<div class="w-100 fixed-bottom footer d-flex justify-content-evenly align-items-center bg-primary">
+  <div class="dropup dropup-center bg-primary d-none">
+    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+      Speed
+    </button>
+    <ul class="dropdown-menu">
+      <li><a class="dropdown-item" href="#">1x</a></li>
+      <li><a class="dropdown-item" href="#">1.1x</a></li>
+      <li><a class="dropdown-item" href="#">1.25x</a></li>
+      <li><a class="dropdown-item" href="#">1.33x</a></li>
+      <li><a class="dropdown-item" href="#">1.5x</a></li>
+    </ul>
+  </div>
+
+  <button id="resume" class="btn btn-dark"><i class="fa-solid fa-2x fa-fw fa-play"></i></button>
+  <button id="pause" class="btn btn-dark"><i class="fa-solid fa-2x fa-fw fa-pause"></i></button>
 </div>
 
 <script>initPiaf();</script>

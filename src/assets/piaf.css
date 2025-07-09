@@ -12,4 +12,10 @@ nav + div {
   --bs-btn-padding-y: 0px;
 }
 
+.footer {
+  border-top: 4px solid var(--bs-body-bg);
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
 /*# sourceMappingURL=piaf.css.map */

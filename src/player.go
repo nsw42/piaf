@@ -48,7 +48,7 @@ func (player *Player) Play(path string) error {
 		Paused: false,
 	}
 
-	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/30))
+	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/2))
 
 	speaker.Play(player.Control)
 

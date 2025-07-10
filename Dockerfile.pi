@@ -1,0 +1,14 @@
+ARG CROSS_BUILDER=go-cross-builder-1.24-alpine3.22-aarch64
+FROM --platform=$BUILDPLATFORM ${CROSS_BUILDER} AS crossbuilder
+ARG TARGETPLATFORM
+
+RUN xx-apk add alsa-lib-dev
+
+WORKDIR /go/src
+ADD src /go/src/src
+
+RUN mkdir -p dist; \
+    cd src; \
+    go mod tidy
+
+RUN cd src; go build -o ../dist/piaf -ldflags "-s -w"

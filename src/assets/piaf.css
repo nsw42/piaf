@@ -8,8 +8,14 @@ nav + div {
   margin-top: 64px;
 }
 
-.piaf-media-table button {
+.piaf-media-table .btn-link {
   --bs-btn-padding-y: 0px;
+}
+.piaf-media-table button.piaf-play-icon {
+  --bs-btn-padding-x: 2px;
+}
+.piaf-media-table col:nth-child(1) {
+  width: 24px;
 }
 
 .footer {

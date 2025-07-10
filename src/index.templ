@@ -27,22 +27,44 @@
   {{/* the main content */}}
 
   <table class="piaf-media-table table table-striped">
+    <colgroup>
+      <col span="1">
+      <col span="1">
+      <col span="1">
+    </colgroup>
+
     <tbody>
       {{/* directories first */}}
       {{- if ne .RequestPath "/" -}}
-        <tr><td><a href="..">(up)</a></td></tr>
+        <tr>
+          <td></td>
+          <td><a class="btn btn-link" href="..">(up)</a></td>
+          <td></td>
+        </tr>
       {{end}}
 
       {{- range .MediaDir.SubDirectories }}
-        <tr><td><a href="/media/{{.RelativePath}}/">{{.Leaf}}</a></td></tr>
+        <tr>
+          <td></td>
+          <td><a class="btn btn-link" href="/media/{{.RelativePath}}/">{{.Leaf}}</a></td>
+          <td></td>
+        </tr>
       {{- end -}}
 
       {{- range .MediaDir.Files }}
-        <tr><td>
-          <button type="button" class="btn btn-link piaf-play-file" data-file="{{.RelativePath}}">
-            {{.DisplayName}} ({{.Duration}})
-          </button>
-        </td></tr>
+        <tr>
+          <td>
+            <button type="button" class="btn btn-link piaf-play-file piaf-play-icon" data-file="{{.RelativePath}}"><i class="fa-solid fa-play"></i></button>
+          </td>
+          <td>
+            <button type="button" class="btn btn-link piaf-play-file" data-file="{{.RelativePath}}">
+              {{.DisplayName}}
+            </button>
+          </td>
+          <td>
+            {{.Duration}}
+          </td>
+        </tr>
       {{- end }}
     </tbody>
   </table>

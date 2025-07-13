@@ -6,6 +6,7 @@
 <script src="https://kit.fontawesome.com/b06f37c98e.js" crossorigin="anonymous"></script>
 <script src="/assets/bootstrap.bundle.min.js"></script>
 <script src="/assets/piaf.js"></script>
+<title>{{.RequestPath}} - piaf</title>
 </head>
 <body>
 
@@ -70,6 +71,7 @@
   </table>
 </div>
 
+{{/* footer */}}
 <div class="w-100 fixed-bottom footer d-flex justify-content-evenly align-items-center bg-primary">
   <div class="dropup dropup-center bg-primary d-none">
     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -84,8 +86,15 @@
     </ul>
   </div>
 
-  <button id="resume" class="btn btn-dark"><i class="fa-solid fa-2x fa-fw fa-play"></i></button>
-  <button id="pause" class="btn btn-dark"><i class="fa-solid fa-2x fa-fw fa-pause"></i></button>
+  <div class="mx-4">
+    <button id="resume" class="btn btn-primary me-5"><i class="fa-solid fa-2x fa-fw fa-play"></i></button>
+    <button id="pause" class="btn btn-primary"><i class="fa-solid fa-2x fa-fw fa-pause"></i></button>
+  </div>
+
+  <div class="d-flex flex-column align-items-center volume-container">
+    <input type="range" class="form-range volume-slider" id="volume-slider" min="0" max="100">
+    <span id="volume-text">50</span>
+  </div>
 </div>
 
 <script>initPiaf();</script>

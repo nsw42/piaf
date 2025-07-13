@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -13,6 +14,7 @@ import (
 type GetStatusResponse struct {
 	Status     string  `json:"state"`
 	NowPlaying *string `json:"now_playing"`
+	Volume     int     `json:"volume"` // 0 <= Volume <= 100
 }
 
 func ConfigureRouter() *gin.Engine {
@@ -23,6 +25,7 @@ func ConfigureRouter() *gin.Engine {
 	router.PUT("/player/pause", pauseHandler)
 	router.PUT("/player/resume", resumeHandler)
 	router.GET("/player/status", getPlayerStatusHandler)
+	router.PUT("/player/volume", volumeHandler)
 	router.Static("/assets", "./assets")
 	return router
 }
@@ -118,12 +121,13 @@ func getPlayerStatusHandler(c *gin.Context) {
 	response := GetStatusResponse{
 		Status:     playerStateString(MediaPlayer.State),
 		NowPlaying: nowPlaying,
+		Volume:     MediaPlayer.DisplayVolume,
 	}
 	c.JSON(http.StatusOK, response)
 }
 
 func playHandler(c *gin.Context) {
-	displayPath, pathElts := getUriPathElements(c)
+	displayPath, pathElts := getUriPathElements(c) // TODO: This would make more sense as a query param than a uri param
 	if len(pathElts) == 0 {
 		// No file to play
 		c.Status(http.StatusNotFound)
@@ -159,4 +163,15 @@ func resumeHandler(c *gin.Context) {
 	} else {
 		c.Status(http.StatusConflict)
 	}
+}
+
+func volumeHandler(c *gin.Context) {
+	volStr := c.Query("v")
+	vol, err := strconv.Atoi(volStr)
+	if err != nil || vol < 0 || vol > 100 {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	MediaPlayer.SetVolume(vol)
+	c.Status(http.StatusNoContent)
 }

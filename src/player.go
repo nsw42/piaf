@@ -19,18 +19,27 @@ const (
 )
 
 type Player struct {
-	State         PlayerState
-	Control       *beep.Ctrl
-	NowPlaying    string
-	DisplayVolume int // 0 <= DisplayVolume <= 100
-	Volume        *effects.Volume
+	State      PlayerState
+	NowPlaying string
+	Speed      float64 // ratio, e.g. 1.0, 1.1, etc
+	Volume     int     // 0 <= Volume <= 100
+
+	// The beep streamers
+	pauser         *beep.Ctrl
+	resampler      *beep.Resampler
+	volumeStreamer *effects.Volume
 }
 
 func NewPlayer() *Player {
 	return &Player{
-		State:         PlayerStateStopped,
-		DisplayVolume: 100,
+		State:  PlayerStateStopped,
+		Speed:  1.0,
+		Volume: 100,
 	}
+}
+
+func calculateVolumeRatio(volume int) float64 {
+	return (float64(volume - 100)) / 25.0
 }
 
 func (player *Player) Play(path string) error {
@@ -45,22 +54,23 @@ func (player *Player) Play(path string) error {
 	if err != nil {
 		return err
 	}
-	player.Control = &beep.Ctrl{
+	player.pauser = &beep.Ctrl{
 		Streamer: beep.Seq(streamer, beep.Callback(func() {
 			player.State = PlayerStateStopped
 		})),
 		Paused: false,
 	}
-	player.Volume = &effects.Volume{
-		Streamer: player.Control,
+	player.resampler = beep.ResampleRatio(4, player.Speed, player.pauser)
+	player.volumeStreamer = &effects.Volume{
+		Streamer: player.resampler,
 		Base:     2,
-		Volume:   calculateVolumeRatio(player.DisplayVolume),
+		Volume:   calculateVolumeRatio(player.Volume),
 		Silent:   false,
 	}
 
 	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/2))
 
-	speaker.Play(player.Volume)
+	speaker.Play(player.volumeStreamer)
 
 	player.State = PlayerStatePlaying
 
@@ -69,7 +79,7 @@ func (player *Player) Play(path string) error {
 
 func (player *Player) Close() error {
 	if player.State != PlayerStateStopped {
-		player.Control.Streamer = nil
+		player.pauser.Streamer = nil
 	}
 
 	return nil
@@ -78,7 +88,7 @@ func (player *Player) Close() error {
 func (player *Player) Pause() error {
 	if player.State == PlayerStatePlaying {
 		speaker.Lock()
-		player.Control.Paused = true
+		player.pauser.Paused = true
 		speaker.Unlock()
 		player.State = PlayerStatePaused
 	}
@@ -88,10 +98,17 @@ func (player *Player) Pause() error {
 func (player *Player) Resume() error {
 	if player.State == PlayerStatePaused {
 		speaker.Lock()
-		player.Control.Paused = false
+		player.pauser.Paused = false
 		speaker.Unlock()
 		player.State = PlayerStatePlaying
 	}
+	return nil
+}
+
+func (player *Player) SetSpeed(newValue float64) error {
+	speaker.Lock()
+	player.resampler.SetRatio(newValue)
+	speaker.Unlock()
 	return nil
 }
 
@@ -102,18 +119,14 @@ func (player *Player) SetVolume(newValue int) error {
 	if newValue > 100 {
 		newValue = 100
 	}
-	player.DisplayVolume = newValue
+	player.Volume = newValue
 	speaker.Lock()
 	if newValue == 0 {
-		player.Volume.Silent = true
+		player.volumeStreamer.Silent = true
 	} else {
-		player.Volume.Silent = false
-		player.Volume.Volume = calculateVolumeRatio(newValue)
+		player.volumeStreamer.Silent = false
+		player.volumeStreamer.Volume = calculateVolumeRatio(newValue)
 	}
 	speaker.Unlock()
 	return nil
-}
-
-func calculateVolumeRatio(volume int) float64 {
-	return (float64(volume - 100)) / 25.0
 }

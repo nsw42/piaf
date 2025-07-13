@@ -1,5 +1,6 @@
 let resumeButton;
 let pauseButton;
+let speedMenuButton;
 let volumeSlider;
 let volumeText;
 let volumeSliderDragActive;
@@ -39,32 +40,62 @@ function initPiaf() {
 
     volumeText = document.getElementById('volume-text')
 
+    speedMenuButton = document.getElementById('speed-menu-button')
+    for (const element of document.getElementsByClassName('speed-menu-item')) {
+        element.addEventListener("click", (event) => {
+            fetch(`/player/speed?v=${element.getAttribute('data-speed-value')}`, {
+                method: "PUT"
+            })
+        })
+    }
+
     setTimeout(updateNowPlaying, 1000)
 }
 
-async function updateNowPlaying() {
-    const response = await fetch("/player/status")
-    const data = await response.json()
-    switch (data['state']) {
-        case 'stopped':
-            pauseButton.setAttribute('disabled', 'disabled')
-            resumeButton.setAttribute('disabled', 'disabled')
-            volumeSlider.setAttribute('disabled', 'disabled')
-            break
-        case 'paused':
-            pauseButton.setAttribute('disabled', 'disabled')
-            resumeButton.removeAttribute('disabled')
-            volumeSlider.removeAttribute('disabled')
-            break
-        case 'playing':
-            pauseButton.removeAttribute('disabled')
-            resumeButton.setAttribute('disabled', 'disabled')
-            volumeSlider.removeAttribute('disabled')
-            break
+function disableElements(elements) {
+    for (const elt of elements) {
+        elt.setAttribute('disabled', 'disabled')
     }
+}
 
-    volumeSlider.value = data['volume']
-    volumeText.innerHTML = data['volume']
+function enableElements(elements) {
+    for (const elt of elements) {
+        elt.removeAttribute('disabled')
+    }
+}
+
+async function updateNowPlaying() {
+    try {
+        const response = await fetch("/player/status")
+        if (response?.ok) {
+            const data = await response.json()
+            switch (data['state']) {
+                case 'stopped':
+                    disableElements([
+                        pauseButton,
+                        resumeButton,
+                        speedMenuButton,
+                        volumeSlider
+                    ])
+                    break
+                case 'paused':
+                    disableElements([pauseButton])
+                    enableElements([resumeButton, speedMenuButton, volumeSlider])
+                    break
+                case 'playing':
+                    disableElements([resumeButton])
+                    enableElements([pauseButton, speedMenuButton, volumeSlider])
+                    break
+            }
+
+            volumeSlider.value = volumeText.innerHTML = data['volume']
+        } else {
+            console.log(`Fetch failed: ${response?.status}`)
+        }
+    } catch (error) {
+        console.log(error)
+        // and try again in a bit
+    }
 
     setTimeout(updateNowPlaying, 1000)
 }

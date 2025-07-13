@@ -74,15 +74,15 @@
 {{/* footer */}}
 <div class="w-100 fixed-bottom footer d-flex justify-content-evenly align-items-center bg-primary">
   <div class="dropup dropup-center bg-primary d-none">
-    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <button id="speed-menu-button" class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
       Speed
     </button>
     <ul class="dropdown-menu">
-      <li><a class="dropdown-item" href="#">1x</a></li>
-      <li><a class="dropdown-item" href="#">1.1x</a></li>
-      <li><a class="dropdown-item" href="#">1.25x</a></li>
-      <li><a class="dropdown-item" href="#">1.33x</a></li>
-      <li><a class="dropdown-item" href="#">1.5x</a></li>
+      <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.0">1x</button></li>
+      <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.1">1.1x</button></li>
+      <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.25">1.25x</button></li>
+      <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.33">1.33x</button></li>
+      <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.5">1.5x</button></li>
     </ul>
   </div>
 

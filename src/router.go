@@ -25,6 +25,7 @@ func ConfigureRouter() *gin.Engine {
 	router.PUT("/player/pause", pauseHandler)
 	router.PUT("/player/resume", resumeHandler)
 	router.GET("/player/status", getPlayerStatusHandler)
+	router.PUT("/player/speed", speedHandler)
 	router.PUT("/player/volume", volumeHandler)
 	router.Static("/assets", "./assets")
 	return router
@@ -121,7 +122,7 @@ func getPlayerStatusHandler(c *gin.Context) {
 	response := GetStatusResponse{
 		Status:     playerStateString(MediaPlayer.State),
 		NowPlaying: nowPlaying,
-		Volume:     MediaPlayer.DisplayVolume,
+		Volume:     MediaPlayer.Volume,
 	}
 	c.JSON(http.StatusOK, response)
 }
@@ -165,6 +166,16 @@ func resumeHandler(c *gin.Context) {
 	}
 }
 
+func speedHandler(c *gin.Context) {
+	speedStr := c.Query("v")
+	speed, err := strconv.ParseFloat(speedStr, 64)
+	if err != nil || speed < 0 {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	MediaPlayer.SetSpeed(speed)
+	c.Status(http.StatusNoContent)
+}
 func volumeHandler(c *gin.Context) {
 	volStr := c.Query("v")
 	vol, err := strconv.Atoi(volStr)

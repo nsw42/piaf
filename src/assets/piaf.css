@@ -1,5 +1,5 @@
 .banner-path-item:not(:first-child)::before {
-  content: ">";
+  content: "/";
   margin-left: 8px;
   margin-right: 8px;
 }

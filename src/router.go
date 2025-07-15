@@ -179,6 +179,7 @@ func speedHandler(c *gin.Context) {
 	}
 	c.Status(http.StatusNoContent)
 }
+
 func volumeHandler(c *gin.Context) {
 	volStr := c.Query("v")
 	vol, err := strconv.Atoi(volStr)

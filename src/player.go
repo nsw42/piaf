@@ -1,13 +1,17 @@
 package main
 
 import (
+	"errors"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gopxl/beep"
 	"github.com/gopxl/beep/mp3"
 	"github.com/gopxl/beep/speaker"
 	"github.com/gopxl/beep/v2/effects"
+
+	"github.com/nsw42/piaf/soundtouch_wrapper"
 )
 
 type PlayerState int
@@ -19,22 +23,25 @@ const (
 )
 
 type Player struct {
-	State      PlayerState
-	NowPlaying string
-	Speed      float64 // ratio, e.g. 1.0, 1.1, etc
-	Volume     int     // 0 <= Volume <= 100
+	State       PlayerState
+	NowPlaying  string
+	Speed       float64 // ratio, e.g. 1.0, 1.1, etc
+	SpeedString string
+	Volume      int // 0 <= Volume <= 100
 
 	// The beep streamers
+	eofHandler     beep.Streamer
 	pauser         *beep.Ctrl
-	resampler      *beep.Resampler
+	resampler      *soundtouch_wrapper.TimeStretch
 	volumeStreamer *effects.Volume
 }
 
 func NewPlayer() *Player {
 	return &Player{
-		State:  PlayerStateStopped,
-		Speed:  1.0,
-		Volume: 100,
+		State:       PlayerStateStopped,
+		Speed:       1.0,
+		SpeedString: "1x",
+		Volume:      100,
 	}
 }
 
@@ -54,21 +61,27 @@ func (player *Player) Play(path string) error {
 	if err != nil {
 		return err
 	}
+	player.eofHandler = beep.Seq(streamer, beep.Callback(func() {
+		player.State = PlayerStateStopped
+		player.NowPlaying = ""
+	}))
+	player.resampler = soundtouch_wrapper.NewTimeStretch(
+		player.eofHandler,
+		format.SampleRate,
+		player.Speed,
+	)
 	player.pauser = &beep.Ctrl{
-		Streamer: beep.Seq(streamer, beep.Callback(func() {
-			player.State = PlayerStateStopped
-		})),
-		Paused: false,
-	}
-	player.resampler = beep.ResampleRatio(4, player.Speed, player.pauser)
-	player.volumeStreamer = &effects.Volume{
 		Streamer: player.resampler,
+		Paused:   false,
+	}
+	player.volumeStreamer = &effects.Volume{
+		Streamer: player.pauser,
 		Base:     2,
 		Volume:   calculateVolumeRatio(player.Volume),
 		Silent:   false,
 	}
 
-	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/2))
+	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/4))
 
 	speaker.Play(player.volumeStreamer)
 
@@ -105,9 +118,15 @@ func (player *Player) Resume() error {
 	return nil
 }
 
-func (player *Player) SetSpeed(newValue float64) error {
+func (player *Player) SetSpeed(newValue string) error {
+	speed, err := strconv.ParseFloat(newValue, 64)
+	if err != nil || speed < 0 {
+		return errors.New("illegal speed string")
+	}
+	player.SpeedString = newValue
+	player.Speed = speed
 	speaker.Lock()
-	player.resampler.SetRatio(newValue)
+	player.resampler.SetTempo(speed)
 	speaker.Unlock()
 	return nil
 }

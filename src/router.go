@@ -14,6 +14,7 @@ import (
 type GetStatusResponse struct {
 	Status     string  `json:"state"`
 	NowPlaying *string `json:"now_playing"`
+	Speed      string  `json:"speed"`
 	Volume     int     `json:"volume"` // 0 <= Volume <= 100
 }
 
@@ -122,6 +123,7 @@ func getPlayerStatusHandler(c *gin.Context) {
 	response := GetStatusResponse{
 		Status:     playerStateString(MediaPlayer.State),
 		NowPlaying: nowPlaying,
+		Speed:      MediaPlayer.SpeedString,
 		Volume:     MediaPlayer.Volume,
 	}
 	c.JSON(http.StatusOK, response)
@@ -168,12 +170,13 @@ func resumeHandler(c *gin.Context) {
 
 func speedHandler(c *gin.Context) {
 	speedStr := c.Query("v")
-	speed, err := strconv.ParseFloat(speedStr, 64)
-	if err != nil || speed < 0 {
-		c.Status(http.StatusBadRequest)
+	err := MediaPlayer.SetSpeed(speedStr)
+	if err != nil {
+		rtn := make(map[string]string, 1)
+		rtn["error"] = err.Error()
+		c.JSON(http.StatusBadRequest, rtn)
 		return
 	}
-	MediaPlayer.SetSpeed(speed)
 	c.Status(http.StatusNoContent)
 }
 func volumeHandler(c *gin.Context) {

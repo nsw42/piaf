@@ -42,7 +42,7 @@ function initPiaf() {
 
     speedMenuButton = document.getElementById('speed-menu-button')
     for (const element of document.getElementsByClassName('speed-menu-item')) {
-        element.addEventListener("click", (event) => {
+        element.addEventListener("click", () => {
             fetch(`/player/speed?v=${element.getAttribute('data-speed-value')}`, {
                 method: "PUT"
             })
@@ -88,6 +88,11 @@ async function updateNowPlaying() {
                     break
             }
 
+            let speed = data['speed']
+            if (!speed.endsWith('x')) {
+                speed += "x"
+            }
+            speedMenuButton.innerHTML = speed
             volumeSlider.value = volumeText.innerHTML = data['volume']
         } else {
             console.log(`Fetch failed: ${response?.status}`)

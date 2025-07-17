@@ -4,6 +4,7 @@ let speedMenuButton;
 let volumeSlider;
 let volumeText;
 let volumeSliderDragActive;
+let trMediaFiles;
 
 function initPiaf() {
     document.querySelectorAll(".piaf-play-file").forEach(btn => {
@@ -49,6 +50,8 @@ function initPiaf() {
         })
     }
 
+    trMediaFiles = document.getElementsByClassName('piaf-media-files')
+
     setTimeout(updateNowPlaying, 1000)
 }
 
@@ -69,30 +72,7 @@ async function updateNowPlaying() {
         const response = await fetch("/player/status")
         if (response?.ok) {
             const data = await response.json()
-            switch (data['state']) {
-                case 'stopped':
-                    disableElements([
-                        pauseButton,
-                        resumeButton,
-                        speedMenuButton
-                    ])
-                    break
-                case 'paused':
-                    disableElements([pauseButton])
-                    enableElements([resumeButton, speedMenuButton])
-                    break
-                case 'playing':
-                    disableElements([resumeButton])
-                    enableElements([pauseButton, speedMenuButton])
-                    break
-            }
-
-            let speed = data['speed']
-            if (!speed.endsWith('x')) {
-                speed += "x"
-            }
-            speedMenuButton.innerHTML = speed
-            volumeSlider.value = volumeText.innerHTML = data['volume']
+            showNowPlaying(data)
         } else {
             console.log(`Fetch failed: ${response?.status}`)
         }
@@ -102,4 +82,42 @@ async function updateNowPlaying() {
     }
 
     setTimeout(updateNowPlaying, 1000)
+}
+
+
+function showNowPlaying(data) {
+    switch (data['state']) {
+        case 'stopped':
+            disableElements([
+                pauseButton,
+                resumeButton,
+                speedMenuButton
+            ])
+            break
+        case 'paused':
+            disableElements([pauseButton])
+            enableElements([resumeButton, speedMenuButton])
+            break
+        case 'playing':
+            disableElements([resumeButton])
+            enableElements([pauseButton, speedMenuButton])
+            break
+    }
+
+    let speed = data['speed']
+    if (!speed.endsWith('x')) {
+        speed += "x"
+    }
+    speedMenuButton.innerHTML = speed
+    volumeSlider.value = volumeText.innerHTML = data['volume']
+
+    const nowPlaying  = data['now_playing']
+    for (const tr of trMediaFiles) {
+        const rowPath = tr.getAttribute('data-path')
+        if (rowPath == nowPlaying) {
+            tr.classList.add('table-info')
+        } else{
+            tr.classList.remove('table-info')
+        }
+    }
 }

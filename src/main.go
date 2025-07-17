@@ -91,7 +91,7 @@ func readMediaDir(root, parent string) *MediaDirectory {
 			}
 			ext := filepath.Ext(fileName)
 			switch ext {
-			case ".mp3": // , ".m4a"
+			case ".mp3", ".m4a":
 				displayName := strings.TrimSuffix(fileName, ext)
 				rtn.Files[fileName] = &MediaFile{
 					DisplayName:  displayName,

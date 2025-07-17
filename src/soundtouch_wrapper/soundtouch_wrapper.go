@@ -10,7 +10,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/gopxl/beep"
+	"github.com/gopxl/beep/v2"
 )
 
 type SoundTouchSample float32

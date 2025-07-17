@@ -4,8 +4,8 @@ go 1.24.3
 
 require (
 	github.com/gin-gonic/gin v1.10.1
-	github.com/gopxl/beep v1.4.1
 	github.com/gopxl/beep/v2 v2.1.1
+	github.com/nsw42/beepm4a v0.0.0-20250717220408-472ef37e6f4d
 )
 
 require (

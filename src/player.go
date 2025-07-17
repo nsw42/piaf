@@ -2,15 +2,18 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
-	"github.com/gopxl/beep"
-	"github.com/gopxl/beep/mp3"
-	"github.com/gopxl/beep/speaker"
+	"github.com/gopxl/beep/v2"
 	"github.com/gopxl/beep/v2/effects"
+	"github.com/gopxl/beep/v2/mp3"
+	"github.com/gopxl/beep/v2/speaker"
 
+	"github.com/nsw42/beepm4a/m4a/seekable"
 	"github.com/nsw42/piaf/soundtouch_wrapper"
 )
 
@@ -57,10 +60,21 @@ func (player *Player) Play(path string) error {
 		return err
 	}
 
-	streamer, format, err := mp3.Decode(f)
+	var streamer beep.StreamSeekCloser
+	var format beep.Format
+
+	if strings.HasSuffix(path, ".mp3") {
+		streamer, format, err = mp3.Decode(f)
+	} else if strings.HasSuffix(path, ".m4a") {
+		streamer, format, err = seekable.Decode(f)
+	} else {
+		err = fmt.Errorf("don't know how to play %s", path)
+	}
+
 	if err != nil {
 		return err
 	}
+
 	player.eofHandler = beep.Seq(streamer, beep.Callback(func() {
 		player.State = PlayerStateStopped
 		player.NowPlaying = ""

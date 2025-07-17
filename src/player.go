@@ -74,11 +74,15 @@ func (player *Player) Play(path string) error {
 		Streamer: player.resampler,
 		Paused:   false,
 	}
+	silent := false
+	if player.Volume == 0 {
+		silent = true
+	}
 	player.volumeStreamer = &effects.Volume{
 		Streamer: player.pauser,
 		Base:     2,
 		Volume:   calculateVolumeRatio(player.Volume),
-		Silent:   false,
+		Silent:   silent,
 	}
 
 	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/4))
@@ -139,13 +143,15 @@ func (player *Player) SetVolume(newValue int) error {
 		newValue = 100
 	}
 	player.Volume = newValue
-	speaker.Lock()
-	if newValue == 0 {
-		player.volumeStreamer.Silent = true
-	} else {
-		player.volumeStreamer.Silent = false
-		player.volumeStreamer.Volume = calculateVolumeRatio(newValue)
+	if player.volumeStreamer != nil {
+		speaker.Lock()
+		if newValue == 0 {
+			player.volumeStreamer.Silent = true
+		} else {
+			player.volumeStreamer.Silent = false
+			player.volumeStreamer.Volume = calculateVolumeRatio(newValue)
+		}
+		speaker.Unlock()
 	}
-	speaker.Unlock()
 	return nil
 }

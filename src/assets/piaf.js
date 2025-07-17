@@ -74,17 +74,16 @@ async function updateNowPlaying() {
                     disableElements([
                         pauseButton,
                         resumeButton,
-                        speedMenuButton,
-                        volumeSlider
+                        speedMenuButton
                     ])
                     break
                 case 'paused':
                     disableElements([pauseButton])
-                    enableElements([resumeButton, speedMenuButton, volumeSlider])
+                    enableElements([resumeButton, speedMenuButton])
                     break
                 case 'playing':
                     disableElements([resumeButton])
-                    enableElements([pauseButton, speedMenuButton, volumeSlider])
+                    enableElements([pauseButton, speedMenuButton])
                     break
             }
 

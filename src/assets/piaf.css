@@ -32,4 +32,8 @@ nav + div {
   width: 25%;
 }
 
+#speed-menu-button {
+  min-width: 6em;
+}
+
 /*# sourceMappingURL=piaf.css.map */

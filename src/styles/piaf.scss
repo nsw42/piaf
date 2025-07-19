@@ -35,3 +35,7 @@ nav + div {
 .volume-container {
     width: 25%;
 }
+
+#speed-menu-button {
+    min-width: 6em;  // stop the button fluctuating in size
+}

@@ -8,12 +8,15 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 )
 
 type CommandLineArguments struct {
-	MediaParentDirectory string
+	MediaParentDirectory   string
+	UnplayedMediaDirectory string
+	PlayedMediaDirectory   string
 }
 
 type MediaFile struct {
@@ -35,6 +38,21 @@ var Media *MediaDirectory
 var PageTemplate *template.Template
 var MediaPlayer *Player
 
+func isDir(dir string) bool {
+	stat, err := os.Stat(dir)
+	if err != nil {
+		return false
+	}
+	return stat.IsDir()
+}
+
+func ensureIsDir(dir string, errorMessage string) {
+	if !isDir(dir) {
+		fmt.Println(errorMessage, dir)
+		os.Exit(1)
+	}
+}
+
 func parseArgs() CommandLineArguments {
 	mediaDir := flag.String("d", "", "play files from DIR")
 	flag.Parse()
@@ -44,15 +62,15 @@ func parseArgs() CommandLineArguments {
 		os.Exit(1)
 	}
 
-	_, err := os.Lstat(*mediaDir) // Quick existence test
-	if err != nil {
-		fmt.Println("Unable to read music directory", *mediaDir)
-		os.Exit(1)
+	args := CommandLineArguments{
+		MediaParentDirectory:   *mediaDir,
+		UnplayedMediaDirectory: path.Join(*mediaDir, "Unplayed"),
+		PlayedMediaDirectory:   path.Join(*mediaDir, "Played"),
 	}
 
-	args := CommandLineArguments{
-		MediaParentDirectory: *mediaDir,
-	}
+	ensureIsDir(args.MediaParentDirectory, "Unable to read media directory")
+	ensureIsDir(args.UnplayedMediaDirectory, "Unplayed directory does not exist")
+	ensureIsDir(args.PlayedMediaDirectory, "Played directory does not exist")
 
 	return args
 }
@@ -155,7 +173,7 @@ func getMediaLengths(directory *MediaDirectory) {
 
 func main() {
 	args := parseArgs()
-	Media = readMediaDir(args.MediaParentDirectory, args.MediaParentDirectory)
+	Media = readMediaDir(args.UnplayedMediaDirectory, args.UnplayedMediaDirectory)
 	go getMediaLengths(Media)
 
 	MediaPlayer = NewPlayer()

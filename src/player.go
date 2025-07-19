@@ -52,7 +52,7 @@ func calculateVolumeRatio(volume int) float64 {
 	return (float64(volume - 100)) / 25.0
 }
 
-func (player *Player) Play(path string) error {
+func (player *Player) Play(path string, eofCallback func()) error {
 	player.Close()
 
 	f, err := os.Open(path)
@@ -78,6 +78,7 @@ func (player *Player) Play(path string) error {
 	player.eofHandler = beep.Seq(streamer, beep.Callback(func() {
 		player.State = PlayerStateStopped
 		player.NowPlaying = ""
+		eofCallback()
 	}))
 	player.resampler = soundtouch_wrapper.NewTimeStretch(
 		player.eofHandler,

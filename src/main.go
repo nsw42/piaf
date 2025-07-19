@@ -4,56 +4,21 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
-	"io"
-	"log"
 	"os"
-	"os/exec"
-	"path"
-	"path/filepath"
-	"strings"
+
+	"github.com/nsw42/piaf/mediadir"
 )
 
 type CommandLineArguments struct {
-	MediaParentDirectory   string
-	UnplayedMediaDirectory string
-	PlayedMediaDirectory   string
+	MediaParentDirectory string
 }
 
-type MediaFile struct {
-	DisplayName  string // the leaf, with file extension removed
-	Path         string // the full path
-	RelativePath string // the pull path relative to the root media parent directory
-	Duration     string // extracted from ffmpeg output
-}
-
-type MediaDirectory struct {
-	Leaf           string                     // just the final element of the path
-	Path           string                     // the full path
-	RelativePath   string                     // the full path relative to the root media parent directory
-	SubDirectories map[string]*MediaDirectory // indexed by leaf
-	Files          map[string]*MediaFile      // Each entry is a full path
-}
-
-var Media *MediaDirectory
+var Args *CommandLineArguments
+var Media *mediadir.RootMediaDirectory
 var PageTemplate *template.Template
 var MediaPlayer *Player
 
-func isDir(dir string) bool {
-	stat, err := os.Stat(dir)
-	if err != nil {
-		return false
-	}
-	return stat.IsDir()
-}
-
-func ensureIsDir(dir string, errorMessage string) {
-	if !isDir(dir) {
-		fmt.Println(errorMessage, dir)
-		os.Exit(1)
-	}
-}
-
-func parseArgs() CommandLineArguments {
+func parseArgs() *CommandLineArguments {
 	mediaDir := flag.String("d", "", "play files from DIR")
 	flag.Parse()
 
@@ -63,118 +28,20 @@ func parseArgs() CommandLineArguments {
 	}
 
 	args := CommandLineArguments{
-		MediaParentDirectory:   *mediaDir,
-		UnplayedMediaDirectory: path.Join(*mediaDir, "Unplayed"),
-		PlayedMediaDirectory:   path.Join(*mediaDir, "Played"),
+		MediaParentDirectory: *mediaDir,
 	}
 
-	ensureIsDir(args.MediaParentDirectory, "Unable to read media directory")
-	ensureIsDir(args.UnplayedMediaDirectory, "Unplayed directory does not exist")
-	ensureIsDir(args.PlayedMediaDirectory, "Played directory does not exist")
-
-	return args
-}
-
-func readMediaDir(root, parent string) *MediaDirectory {
-	files, err := os.ReadDir(parent)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	relativePath, err := filepath.Rel(root, parent)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	rtn := &MediaDirectory{
-		Leaf:           filepath.Base(parent),
-		Path:           parent, // will be initialised to a full path
-		RelativePath:   relativePath,
-		SubDirectories: make(map[string]*MediaDirectory, 0),
-		Files:          make(map[string]*MediaFile, 0), // will be full paths (relative to the original command-line media argument)
-	}
-
-	for _, file := range files {
-		fileName := file.Name()
-		subPath := fmt.Sprintf("%s/%s", parent, fileName)
-		if file.IsDir() {
-			subdir := readMediaDir(root, subPath)
-			if subdir != nil {
-				rtn.SubDirectories[file.Name()] = subdir
-			}
-		} else {
-			relativePath, err = filepath.Rel(root, subPath)
-			if err != nil {
-				log.Fatal(err)
-			}
-			ext := filepath.Ext(fileName)
-			switch ext {
-			case ".mp3", ".m4a":
-				displayName := strings.TrimSuffix(fileName, ext)
-				rtn.Files[fileName] = &MediaFile{
-					DisplayName:  displayName,
-					Path:         subPath,
-					RelativePath: relativePath,
-				}
-			}
-		}
-	}
-
-	if len(rtn.SubDirectories) == 0 && len(rtn.Files) == 0 {
-		return nil // don't bother showing empty directories
-	}
-
-	return rtn
-}
-
-func getOneMediaInfo(file *MediaFile) {
-	cmd := exec.Command("ffmpeg", "-i", file.Path)
-	// the info we want is in ffmpeg stderr output
-	stderrPipe, err := cmd.StderrPipe()
-	if err != nil {
-		log.Println("Unable to get ffmpeg stderr pipe")
-		return
-	}
-	cmd.Start()
-	// Ignore error return, because ffmpeg always exits non-zero
-
-	bytes, err := io.ReadAll(stderrPipe)
-	if err != nil {
-		log.Println("Error reading ffmpeg stderr stream")
-		return
-	}
-	output := string(bytes)
-	for line := range strings.SplitSeq(output, "\n") {
-		line = strings.TrimLeft(line, " ")
-		lineWords := strings.Split(line, " ")
-		if len(lineWords) > 1 && lineWords[0] == "Duration:" {
-			file.Duration = strings.TrimSuffix(lineWords[1], ",")
-		} else if len(lineWords) > 2 && lineWords[0] == "title" {
-			title := strings.TrimLeft(line[6:], " ")
-			title = strings.TrimLeft(title[2:], " ")
-			file.DisplayName = title
-		}
-	}
-	cmd.Wait()
-}
-
-func getMediaLengths(directory *MediaDirectory) {
-	// handle the files in this directory
-	// (so we populate the files in / first)
-	for _, file := range directory.Files {
-		getOneMediaInfo(file)
-	}
-
-	// now recurse for subdirectories
-	for _, subdir := range directory.SubDirectories {
-		getMediaLengths(subdir)
-	}
+	return &args
 }
 
 func main() {
-	args := parseArgs()
-	Media = readMediaDir(args.UnplayedMediaDirectory, args.UnplayedMediaDirectory)
-	go getMediaLengths(Media)
+	var err error
+
+	Args = parseArgs()
+	Media, err = mediadir.ReadMediaDir(Args.MediaParentDirectory)
+	if err != nil {
+		panic(err)
+	}
 
 	MediaPlayer = NewPlayer()
 

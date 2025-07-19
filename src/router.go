@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nsw42/piaf/mediadir"
 )
 
 type GetStatusResponse struct {
@@ -51,10 +52,10 @@ func getUriPathElements(c *gin.Context) (string, []string) {
 	return path, pathElts
 }
 
-func findMediaDir(pathElts []string) *MediaDirectory {
+func findMediaDir(pathElts []string) *mediadir.MediaDirectory {
 	// pathElts must only consist of the directories:
 	// any trailing file must have been removed by the caller
-	search := Media
+	search := Media.Contents
 	for _, elt := range pathElts {
 		var ok bool
 		search, ok = search.SubDirectories[elt]
@@ -105,7 +106,7 @@ func getPageHandler(c *gin.Context) {
 	pageArgs := struct {
 		RequestPath     string
 		RequestPathElts [][2]string
-		MediaDir        *MediaDirectory
+		MediaDir        *mediadir.MediaDirectory
 	}{
 		RequestPath:     path,
 		RequestPathElts: linkPathElts,
@@ -163,7 +164,9 @@ func playHandler(c *gin.Context) {
 		return
 	}
 
-	MediaPlayer.Play(file.Path)
+	MediaPlayer.Play(file.Path, func() {
+		Media.MarkFilePlayed(file)
+	})
 	MediaPlayer.NowPlaying = displayPath
 
 	c.Status(http.StatusNoContent)

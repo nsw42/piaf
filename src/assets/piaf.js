@@ -7,6 +7,7 @@ let volumeSlider;
 let volumeText;
 let volumeSliderDragActive;
 let trMediaFiles;
+let wasPlaying = false;
 
 function initPiaf() {
     contentsDiv = document.getElementById('main-content')
@@ -100,17 +101,22 @@ async function updateNowPlaying() {
 function showNowPlaying(data) {
     switch (data['state']) {
         case 'stopped':
-            disableElements([
-                pauseButton,
-                resumeButton,
-                speedMenuButton
-            ])
+            if (wasPlaying) {
+                location.reload()
+            } else {
+                disableElements([
+                    pauseButton,
+                    resumeButton,
+                    speedMenuButton
+                ])
+            }
             break
         case 'paused':
             disableElements([pauseButton])
             enableElements([resumeButton, speedMenuButton])
             break
         case 'playing':
+            wasPlaying = true;
             disableElements([resumeButton])
             enableElements([pauseButton, speedMenuButton])
             break

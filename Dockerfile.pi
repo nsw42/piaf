@@ -3,6 +3,7 @@ FROM --platform=$BUILDPLATFORM ${CROSS_BUILDER} AS crossbuilder
 ARG TARGETPLATFORM
 
 RUN xx-apk add alsa-lib-dev
+RUN xx-apk add soundtouch-dev
 
 WORKDIR /go/src
 ADD src /go/src/src
@@ -11,4 +12,7 @@ RUN mkdir -p dist; \
     cd src; \
     go mod tidy
 
-RUN cd src; go build -o ../dist/piaf -ldflags "-s -w"
+RUN cd src; \
+    export CGO_CXXFLAGS="`pkg-config --cflags soundtouch`"; \
+    export CGO_LDFLAGS="`pkg-config --libs soundtouch`"; \
+    go build -o ../dist/piaf -ldflags "-s -w"

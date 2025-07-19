@@ -1,6 +1,6 @@
 // soundtouch_wrapper.cpp
+#include <SoundTouch.h>
 #include "soundtouch_wrapper.h"
-#include <soundtouch/SoundTouch.h>
 
 using namespace soundtouch;
 

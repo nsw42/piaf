@@ -1,8 +1,6 @@
 package soundtouch_wrapper
 
 /*
-#cgo CXXFLAGS: -I/opt/homebrew/include -std=c++11
-#cgo LDFLAGS: -L/opt/homebrew/lib -lsoundtouch
 #include "soundtouch_wrapper.h"
 */
 import "C"

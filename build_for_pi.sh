@@ -1,5 +1,7 @@
 #! /bin/bash
 
+set -e
+
 PLATFORM=aarch64
 cd $(dirname $0)
 IMAGE_NAME=piaf-$PLATFORM

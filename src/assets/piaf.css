@@ -18,6 +18,9 @@ nav + div {
 .piaf-media-table col:nth-child(1) {
   width: 24px;
 }
+.piaf-media-table col:nth-child(3) {
+  width: 0;
+}
 
 .footer {
   border-top: 4px solid var(--bs-body-bg);

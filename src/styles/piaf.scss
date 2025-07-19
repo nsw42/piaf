@@ -21,6 +21,9 @@ nav + div {
     col:nth-child(1) {
         width: 24px;
     }
+    col:nth-child(3) {
+        width: 0;  // sets to 'as small as possible', not invisible
+    }
 }
 
 .footer {

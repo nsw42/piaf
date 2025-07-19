@@ -83,13 +83,27 @@ func getPageHandler(c *gin.Context) {
 		return
 	}
 
+	linkPathElts := make([][2]string, 1+len(pathElts))
+	linkPathElts[0][0] = "/media"
+	linkPathElts[0][1] = "Root"
+	linkDest := "/media"
+	for i, pathElt := range pathElts {
+		if i == len(pathElts)-1 {
+			linkPathElts[i+1][0] = ""
+		} else {
+			linkDest = linkDest + "/" + pathElt
+			linkPathElts[i+1][0] = linkDest
+		}
+		linkPathElts[i+1][1] = pathElt
+	}
+
 	pageArgs := struct {
 		RequestPath     string
-		RequestPathElts []string
+		RequestPathElts [][2]string // [0] = link dest (or "" if none), [1] = text
 		MediaDir        *MediaDirectory
 	}{
 		RequestPath:     path,
-		RequestPathElts: pathElts,
+		RequestPathElts: linkPathElts,
 		MediaDir:        mediaDir,
 	}
 	err = PageTemplate.Execute(c.Writer, pageArgs)

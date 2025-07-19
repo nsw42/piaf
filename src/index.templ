@@ -15,7 +15,13 @@
     <a class="navbar-brand border border-0" href="/media">Piaf</a>
     <span class="navbar-nav border border-0 navbar-text h1">
       {{- range .RequestPathElts -}}
-        <span class="banner-path-item">{{.}}</span>  <!-- TODO: Make these links -->
+        <span class="banner-path-item">
+          {{- if index . 0 -}}
+            <a href="{{index . 0}}">{{index . 1}}</a>
+          {{- else -}}
+            {{index . 1}}
+          {{end}}
+        </span>
       {{else}}
         <span>Root</span>
       {{end}}
@@ -39,7 +45,7 @@
       {{- if ne .RequestPath "/" -}}
         <tr>
           <td></td>
-          <td><a class="btn btn-link" href="..">(up)</a></td>
+          <td><a class="btn btn-link" href=".."><i class="fa-solid fa-turn-up fa-flip-horizontal"></i></a><a class="btn btn-link" href="..">Up</a></td>
           <td></td>
         </tr>
       {{end}}

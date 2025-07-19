@@ -1,3 +1,5 @@
+let contentsDiv;
+let navbar;
 let resumeButton;
 let pauseButton;
 let speedMenuButton;
@@ -7,6 +9,11 @@ let volumeSliderDragActive;
 let trMediaFiles;
 
 function initPiaf() {
+    contentsDiv = document.getElementById('main-content')
+    navbar = document.querySelector('.navbar.fixed-top')
+    window.addEventListener('DOMContentLoaded', setContentPadding)
+    window.addEventListener('resize', setContentPadding)
+
     document.querySelectorAll(".piaf-play-file").forEach(btn => {
         btn.addEventListener("click", () => {
             fetch("/player/play/" + btn.getAttribute("data-file"), {
@@ -53,6 +60,11 @@ function initPiaf() {
     trMediaFiles = document.getElementsByClassName('piaf-media-files')
 
     setTimeout(updateNowPlaying, 1000)
+}
+
+function setContentPadding() {
+    const navbarHeight = navbar.offsetHeight;
+    contentsDiv.style.marginTop = `${navbarHeight}px`;
 }
 
 function disableElements(elements) {
@@ -111,12 +123,12 @@ function showNowPlaying(data) {
     speedMenuButton.innerHTML = speed
     volumeSlider.value = volumeText.innerHTML = data['volume']
 
-    const nowPlaying  = data['now_playing']
+    const nowPlaying = data['now_playing']
     for (const tr of trMediaFiles) {
         const rowPath = tr.getAttribute('data-path')
         if (rowPath == nowPlaying) {
             tr.classList.add('table-info')
-        } else{
+        } else {
             tr.classList.remove('table-info')
         }
     }

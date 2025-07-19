@@ -44,7 +44,7 @@ func NewPlayer() *Player {
 		State:       PlayerStateStopped,
 		Speed:       1.0,
 		SpeedString: "1x",
-		Volume:      100,
+		Volume:      50,
 	}
 }
 

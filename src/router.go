@@ -29,7 +29,7 @@ func ConfigureRouter() *gin.Engine {
 	router.GET("/player/status", getPlayerStatusHandler)
 	router.PUT("/player/speed", speedHandler)
 	router.PUT("/player/volume", volumeHandler)
-	router.Static("/assets", "./assets")
+	configureAssetsForRouter(router, "/assets")
 	return router
 }
 

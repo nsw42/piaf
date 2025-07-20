@@ -15,4 +15,4 @@ RUN mkdir -p dist; \
 RUN cd src; \
     export CGO_CXXFLAGS="`pkg-config --cflags soundtouch`"; \
     export CGO_LDFLAGS="`pkg-config --libs soundtouch`"; \
-    go build -o ../dist/piaf -ldflags "-s -w"
+    go build -o ../dist/piaf -tags release -ldflags "-s -w"

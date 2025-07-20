@@ -5,4 +5,4 @@ set -e
 cd "`dirname "$0"`/src"
 export CGO_CXXFLAGS="`pkg-config --cflags soundtouch`"
 export CGO_LDFLAGS="`pkg-config --libs soundtouch`"
-go build -o ../dist/piaf -ldflags="-extldflags=-Wl,-no_warn_duplicate_libraries" .
+go build -o ../dist/piaf -tags release -ldflags="-extldflags=-Wl,-no_warn_duplicate_libraries" .

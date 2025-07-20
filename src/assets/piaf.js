@@ -70,13 +70,13 @@ function setContentPadding() {
 
 function disableElements(elements) {
     for (const elt of elements) {
-        elt.setAttribute('disabled', 'disabled')
+        elt?.setAttribute('disabled', 'disabled')
     }
 }
 
 function enableElements(elements) {
     for (const elt of elements) {
-        elt.removeAttribute('disabled')
+        elt?.removeAttribute('disabled')
     }
 }
 
@@ -122,11 +122,14 @@ function showNowPlaying(data) {
             break
     }
 
-    let speed = data['speed']
-    if (!speed.endsWith('x')) {
-        speed += "x"
+    if (speedMenuButton) {
+        const speed = data['speed']
+        if (!speed.endsWith('x')) {
+            speed += "x"
+        }
+        speedMenuButton.innerHTML = speed
     }
-    speedMenuButton.innerHTML = speed
+
     volumeSlider.value = volumeText.innerHTML = data['volume']
 
     const nowPlaying = data['now_playing']

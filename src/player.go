@@ -52,7 +52,7 @@ func calculateVolumeRatio(volume int) float64 {
 	return (float64(volume - 100)) / 25.0
 }
 
-func (player *Player) Play(path string, eofCallback func()) error {
+func (player *Player) Play(path string, enableSpeedControl bool, eofCallback func()) error {
 	player.Close()
 
 	f, err := os.Open(path)
@@ -60,7 +60,7 @@ func (player *Player) Play(path string, eofCallback func()) error {
 		return err
 	}
 
-	var streamer beep.StreamSeekCloser
+	var streamer beep.Streamer
 	var format beep.Format
 
 	if strings.HasSuffix(path, ".mp3") {
@@ -80,13 +80,20 @@ func (player *Player) Play(path string, eofCallback func()) error {
 		player.NowPlaying = ""
 		eofCallback()
 	}))
-	player.resampler = soundtouch_wrapper.NewTimeStretch(
-		player.eofHandler,
-		format.SampleRate,
-		player.Speed,
-	)
+
+	streamer = player.eofHandler
+	if enableSpeedControl {
+		player.resampler = soundtouch_wrapper.NewTimeStretch(
+			player.eofHandler,
+			format.SampleRate,
+			player.Speed,
+		)
+		streamer = player.resampler
+	} else {
+		player.resampler = nil
+	}
 	player.pauser = &beep.Ctrl{
-		Streamer: player.resampler,
+		Streamer: streamer,
 		Paused:   false,
 	}
 	silent := false
@@ -138,6 +145,9 @@ func (player *Player) Resume() error {
 }
 
 func (player *Player) SetSpeed(newValue string) error {
+	if player.resampler == nil {
+		return errors.New("speed control disabled for this player")
+	}
 	speed, err := strconv.ParseFloat(newValue, 64)
 	if err != nil || speed < 0 {
 		return errors.New("illegal speed string")

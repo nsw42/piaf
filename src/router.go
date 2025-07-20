@@ -104,13 +104,15 @@ func getPageHandler(c *gin.Context) {
 	}
 
 	pageArgs := struct {
-		RequestPath     string
-		RequestPathElts [][2]string
-		MediaDir        *mediadir.MediaDirectory
+		RequestPath        string
+		RequestPathElts    [][2]string
+		MediaDir           *mediadir.MediaDirectory
+		EnableSpeedControl bool
 	}{
-		RequestPath:     path,
-		RequestPathElts: linkPathElts,
-		MediaDir:        mediaDir,
+		RequestPath:        path,
+		RequestPathElts:    linkPathElts,
+		MediaDir:           mediaDir,
+		EnableSpeedControl: Args.EnableSpeedControl,
 	}
 	err = PageTemplate.Execute(c.Writer, pageArgs)
 	if err != nil {
@@ -164,7 +166,7 @@ func playHandler(c *gin.Context) {
 		return
 	}
 
-	MediaPlayer.Play(file.Path, func() {
+	MediaPlayer.Play(file.Path, Args.EnableSpeedControl, func() {
 		Media.MarkFilePlayed(file)
 	})
 	MediaPlayer.NowPlaying = displayPath
@@ -191,6 +193,10 @@ func resumeHandler(c *gin.Context) {
 }
 
 func speedHandler(c *gin.Context) {
+	if !Args.EnableSpeedControl {
+		c.Status(http.StatusConflict)
+		return
+	}
 	speedStr := c.Query("v")
 	err := MediaPlayer.SetSpeed(speedStr)
 	if err != nil {

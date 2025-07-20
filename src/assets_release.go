@@ -4,7 +4,7 @@ package main
 
 import (
 	"embed"
-	"fmt"
+	"html/template"
 	"io/fs"
 	"net/http"
 
@@ -14,8 +14,15 @@ import (
 //go:embed assets/*
 var assets embed.FS
 
+//go:embed templates/*
+var templates embed.FS
+
 func configureAssetsForRouter(router *gin.Engine, path string) {
 	dir, _ := fs.Sub(assets, "assets")
-	fmt.Println("assets", dir)
 	router.StaticFS(path, http.FS(dir))
+}
+
+func getTemplate(templateName string) (*template.Template, error) {
+	dir, _ := fs.Sub(templates, "templates")
+	return template.ParseFS(dir, templateName)
 }

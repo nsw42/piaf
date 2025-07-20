@@ -1,7 +1,6 @@
 package main
 
 import (
-	"html/template"
 	"log"
 	"net/http"
 	"net/url"
@@ -77,15 +76,14 @@ func getPageHandler(c *gin.Context) {
 	}
 
 	// TODO: Move template loading back into ConfigureRouter()
-	PageTemplate, err := template.ParseFiles("index.templ")
+	PageTemplate, err := getTemplate("index.templ")
 	if err != nil || PageTemplate == nil {
 		log.Println("Unable to read template index.templ")
 		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	var linkPathElts [][2]string // [0] = link dest (or "" if none), [1] = text
-	linkPathElts = make([][2]string, 1+len(pathElts))
+	linkPathElts := make([][2]string, 1+len(pathElts)) // [0] = link dest (or "" if none), [1] = text
 	linkPathElts[0][1] = "Root"
 	if len(pathElts) == 0 {
 		linkPathElts[0][0] = "" // no link

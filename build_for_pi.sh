@@ -2,6 +2,8 @@
 
 set -e
 
+npm run build  # ensure CSS is up-to-date
+
 PLATFORM=aarch64
 cd $(dirname $0)
 IMAGE_NAME=piaf-$PLATFORM

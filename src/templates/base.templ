@@ -1,0 +1,68 @@
+{{block "base" .}}
+<!DOCTYPE html>
+<html>
+<head>
+<link href="/assets/piaf.css" rel="stylesheet">
+<script src="https://kit.fontawesome.com/b06f37c98e.js" crossorigin="anonymous"></script>
+<script src="/assets/bootstrap.bundle.min.js"></script>
+<script src="/assets/piaf.js"></script>
+<title>{{.RequestPath}} - piaf</title>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark">
+  <div class="container-fluid d-flex justify-content-between">
+    <a class="navbar-brand border border-0" href="/media">Piaf</a>
+    <span class="navbar-nav border border-0 navbar-text h1">
+      {{- range .RequestPathElts -}}
+        <span class="banner-path-item">
+          {{- if index . 0 -}}
+            <a href="{{index . 0}}">{{index . 1}}</a>
+          {{- else -}}
+            {{index . 1}}
+          {{end}}
+        </span>
+      {{end}}
+    </span>
+    <span class="navbar-brand opacity-0">Piaf</span>
+  </div>
+</nav>
+
+<div id="main-content" class="container">
+
+{{template "content" .}}
+
+</div>
+
+{{/* footer */}}
+<div class="w-100 fixed-bottom footer d-flex justify-content-evenly align-items-center bg-primary">
+  {{ if .EnableSpeedControl }}
+    <div class="dropup dropup-center bg-primary">
+      <button id="speed-menu-button" class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        Speed
+      </button>
+      <ul class="dropdown-menu">
+        <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.0">1x</button></li>
+        <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.1">1.1x</button></li>
+        <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.25">1.25x</button></li>
+        <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.33">1.33x</button></li>
+        <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.5">1.5x</button></li>
+      </ul>
+    </div>
+  {{ end }}
+
+  <div class="mx-4">
+    <button id="resume" class="btn btn-primary piaf-btn-resume me-5"><i class="fa-solid fa-2x fa-fw fa-play"></i></button>
+    <button id="pause" class="btn btn-primary piaf-btn-pause"><i class="fa-solid fa-2x fa-fw fa-pause"></i></button>
+  </div>
+
+  <div class="d-flex flex-column align-items-center volume-container">
+    <input type="range" class="form-range volume-slider" id="volume-slider" min="0" max="100">
+    <span id="volume-text">50</span>
+  </div>
+</div>
+
+<script>initPiaf();</script>
+</body>
+</html>
+{{end}}

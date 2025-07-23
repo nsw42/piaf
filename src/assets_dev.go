@@ -14,6 +14,7 @@ func configureAssetsForRouter(router *gin.Engine, path string) {
 }
 
 func getTemplate(templateName string) (*template.Template, error) {
+	base := filepath.Join("templates", "base.templ")
 	path := filepath.Join("templates", templateName)
-	return template.ParseFiles(path)
+	return template.ParseFiles(path, base)
 }

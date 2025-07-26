@@ -2,7 +2,7 @@
 
 set -e
 
-npm run build  # ensure CSS is up-to-date
+npm run build_css
 
 PLATFORM=aarch64
 cd $(dirname $0)

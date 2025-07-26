@@ -114,7 +114,6 @@ func getIndexPageHandler(c *gin.Context) {
 		return
 	}
 
-	// TODO: Move template loading back into ConfigureRouter()
 	pageTemplate, err := getTemplate("index.templ")
 	if err != nil || pageTemplate == nil {
 		log.Println("Unable to read template index.templ", err)

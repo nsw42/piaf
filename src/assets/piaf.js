@@ -237,7 +237,7 @@ function showNowPlaying(data) {
         currentTrackDuration = data['duration']
         trackDurationText.innerHTML = formatDuration(currentTrackDuration)
         currentPosition = data['position']
-        if (currentPosition) {
+        if (currentPosition !== null || currentPosition !== undefined) {
             positionSlider.value = currentPosition * 100 / currentTrackDuration
             positionText.innerHTML = formatDuration(currentPosition)
         } else {

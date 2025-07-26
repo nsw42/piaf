@@ -202,10 +202,7 @@ function showNowPlaying(data) {
                 let mediaDir = ""
                 if (nowPlayingFile) {
                     // return to the media directory
-                    let slash = nowPlayingFile.lastIndexOf('/')
-                    if (slash < 0) {
-                        slash = nowPlayingFile.length
-                    }
+                    const slash = nowPlayingFile.lastIndexOf('/')
                     mediaDir = nowPlayingFile.substr(0, slash)
                 }
                 gotoPage('/media/' + mediaDir)

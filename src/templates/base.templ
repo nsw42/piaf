@@ -13,7 +13,7 @@
 <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark">
   <div class="container-fluid d-flex justify-content-between">
     <a class="navbar-brand border border-0" href="/media">Piaf</a>
-    <span class="navbar-nav border border-0 navbar-text h1">
+    <div class="navbar-nav border border-0 navbar-text h1">
       {{- range .RequestPathElts -}}
         <span class="banner-path-item">
           {{- if index . 0 -}}
@@ -23,8 +23,8 @@
           {{end}}
         </span>
       {{end}}
-    </span>
-    <span class="navbar-brand opacity-0">Piaf</span>
+    </div>
+    <span class="navbar-brand opacity-0">Piaf</span> {{/* hack to ensure the path is centered */}}
   </div>
 </nav>
 

@@ -30,9 +30,13 @@ function initPiaf() {
 
     for (const button of document.getElementsByClassName('piaf-play-file')) {
         button.addEventListener("click", () => {
-            fetch("/player/play/" + button.getAttribute("data-file"), {
-                method: "PUT"
-            }).then(() => {
+            // Is this the current file?
+            // If so, resume (if necessary)
+            // If not, play it
+            // and go to the player control page
+            const mediaFile = button.getAttribute("data-file")
+            const apiEndpoint = (mediaFile == nowPlayingFile) ? "/player/resume" : "/player/play/" + mediaFile
+            fetch(apiEndpoint, { method: "PUT" }).then(() => {
                 gotoPage('/player/control')
             })
         })

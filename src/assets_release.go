@@ -24,5 +24,5 @@ func configureAssetsForRouter(router *gin.Engine, path string) {
 
 func getTemplate(templateName string) (*template.Template, error) {
 	dir, _ := fs.Sub(templates, "templates")
-	return template.ParseFS(dir, templateName)
+	return template.ParseFS(dir, "base.templ", templateName)
 }

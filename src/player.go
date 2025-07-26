@@ -14,6 +14,7 @@ import (
 	"github.com/gopxl/beep/v2/speaker"
 
 	"github.com/nsw42/beepm4a/m4a/seekable"
+	"github.com/nsw42/piaf/mediadir"
 	"github.com/nsw42/piaf/soundtouch_wrapper"
 )
 
@@ -25,14 +26,29 @@ const (
 	PlayerStatePaused
 )
 
+func (state PlayerState) String() string {
+	switch state {
+	case PlayerStateStopped:
+		return "stopped"
+	case PlayerStatePlaying:
+		return "playing"
+	case PlayerStatePaused:
+		return "paused"
+	default:
+		return "unknown"
+	}
+}
+
 type Player struct {
 	State       PlayerState
-	NowPlaying  string
+	NowPlaying  *mediadir.MediaFile
 	Speed       float64 // ratio, e.g. 1.0, 1.1, etc
 	SpeedString string
 	Volume      int // 0 <= Volume <= 100
 
-	// The beep streamers
+	// The beep streamers and other pertinent information
+	format         beep.Format
+	seeker         beep.StreamSeekCloser
 	eofHandler     beep.Streamer
 	pauser         *beep.Ctrl
 	resampler      *soundtouch_wrapper.TimeStretch
@@ -52,40 +68,39 @@ func calculateVolumeRatio(volume int) float64 {
 	return (float64(volume - 100)) / 25.0
 }
 
-func (player *Player) Play(path string, enableSpeedControl bool, eofCallback func()) error {
+func (player *Player) Play(file *mediadir.MediaFile, enableSpeedControl bool, eofCallback func()) error {
 	player.Close()
 
-	f, err := os.Open(path)
+	f, err := os.Open(file.Path)
 	if err != nil {
 		return err
 	}
 
-	var streamer beep.Streamer
-	var format beep.Format
-
-	if strings.HasSuffix(path, ".mp3") {
-		streamer, format, err = mp3.Decode(f)
-	} else if strings.HasSuffix(path, ".m4a") {
-		streamer, format, err = seekable.Decode(f)
+	if strings.HasSuffix(file.Path, ".mp3") {
+		player.seeker, player.format, err = mp3.Decode(f)
+	} else if strings.HasSuffix(file.Path, ".m4a") {
+		player.seeker, player.format, err = seekable.Decode(f)
 	} else {
-		err = fmt.Errorf("don't know how to play %s", path)
+		err = fmt.Errorf("don't know how to play %s", file.Path)
 	}
 
 	if err != nil {
+		player.State = PlayerStateStopped
+		player.NowPlaying = nil
 		return err
 	}
 
-	player.eofHandler = beep.Seq(streamer, beep.Callback(func() {
+	player.eofHandler = beep.Seq(player.seeker, beep.Callback(func() {
 		player.State = PlayerStateStopped
-		player.NowPlaying = ""
+		player.NowPlaying = nil
 		eofCallback()
 	}))
 
-	streamer = player.eofHandler
+	streamer := player.eofHandler
 	if enableSpeedControl {
 		player.resampler = soundtouch_wrapper.NewTimeStretch(
 			player.eofHandler,
-			format.SampleRate,
+			player.format.SampleRate,
 			player.Speed,
 		)
 		streamer = player.resampler
@@ -107,10 +122,11 @@ func (player *Player) Play(path string, enableSpeedControl bool, eofCallback fun
 		Silent:   silent,
 	}
 
-	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/4))
+	speaker.Init(player.format.SampleRate, player.format.SampleRate.N(time.Second/4))
 
 	speaker.Play(player.volumeStreamer)
 
+	player.NowPlaying = file
 	player.State = PlayerStatePlaying
 
 	return nil
@@ -127,8 +143,8 @@ func (player *Player) Close() error {
 func (player *Player) Pause() error {
 	if player.State == PlayerStatePlaying {
 		speaker.Lock()
+		defer speaker.Unlock()
 		player.pauser.Paused = true
-		speaker.Unlock()
 		player.State = PlayerStatePaused
 	}
 	return nil
@@ -137,11 +153,27 @@ func (player *Player) Pause() error {
 func (player *Player) Resume() error {
 	if player.State == PlayerStatePaused {
 		speaker.Lock()
+		defer speaker.Unlock()
 		player.pauser.Paused = false
-		speaker.Unlock()
 		player.State = PlayerStatePlaying
 	}
 	return nil
+}
+
+func (player *Player) GetPosition() time.Duration {
+	if player.seeker == nil {
+		return 0
+	}
+	return player.format.SampleRate.D(player.seeker.Position())
+}
+
+func (player *Player) SetPosition(p time.Duration) error {
+	if player.seeker == nil {
+		return errors.New("not playing or invalid state")
+	}
+	speaker.Lock()
+	defer speaker.Unlock()
+	return player.seeker.Seek(player.format.SampleRate.N(p))
 }
 
 func (player *Player) SetSpeed(newValue string) error {
@@ -155,8 +187,8 @@ func (player *Player) SetSpeed(newValue string) error {
 	player.SpeedString = newValue
 	player.Speed = speed
 	speaker.Lock()
+	defer speaker.Unlock()
 	player.resampler.SetTempo(speed)
-	speaker.Unlock()
 	return nil
 }
 
@@ -170,13 +202,13 @@ func (player *Player) SetVolume(newValue int) error {
 	player.Volume = newValue
 	if player.volumeStreamer != nil {
 		speaker.Lock()
+		defer speaker.Unlock()
 		if newValue == 0 {
 			player.volumeStreamer.Silent = true
 		} else {
 			player.volumeStreamer.Silent = false
 			player.volumeStreamer.Volume = calculateVolumeRatio(newValue)
 		}
-		speaker.Unlock()
 	}
 	return nil
 }

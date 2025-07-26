@@ -50,3 +50,34 @@ nav + div {
 #speed-menu-button {
     min-width: 6em;  // stop the button fluctuating in size
 }
+
+/* controls page: 2x2 grid, plus a full-width slider */
+.piaf-controls-row-1 {
+    position: fixed;
+    top: 10%;
+    height: 30vh;
+}
+
+.piaf-controls-row-2 {
+    position: fixed;
+    top: 50%;
+    height: 30vh;
+}
+
+.piaf-controls-col-1 {
+    position: fixed;
+    left: 20%;
+}
+
+.piaf-controls-col-2 {
+    position: fixed;
+    right: 20%;
+}
+
+.piaf-controls-row-3 {
+    position: fixed;
+    top: 80%;
+    left: 20%;
+    right: 20%;
+    height: 96px;
+}

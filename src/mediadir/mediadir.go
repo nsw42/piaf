@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -27,10 +28,11 @@ type MediaDirectory struct {
 }
 
 type MediaFile struct {
-	DisplayName  string // the leaf, with file extension removed
-	Path         string // the full path
-	RelativePath string // the full path relative to the root media parent directory
-	Duration     string // extracted from ffmpeg output
+	DisplayName     string // the leaf, with file extension removed
+	Path            string // the full path
+	RelativePath    string // the full path relative to the root media parent directory
+	DurationString  string // extracted from ffmpeg output
+	DurationSeconds int
 }
 
 func isDir(dir string) bool {
@@ -39,6 +41,50 @@ func isDir(dir string) bool {
 		return false
 	}
 	return stat.IsDir()
+}
+
+// hh:mm:ss.ms -> int(seconds)
+func parseDurationString(s string) int {
+	var hh, mm, ss, i int
+	var err error
+
+	fields := strings.Split(s, ":")
+	if len(fields) != 3 {
+		goto Error
+	}
+
+	// hh
+	hh, err = strconv.Atoi(fields[0])
+	if err != nil {
+		goto Error
+	}
+
+	// mm
+	mm, err = strconv.Atoi(fields[1])
+	if err != nil {
+		goto Error
+	}
+
+	// ss
+	i = strings.Index(fields[2], ".")
+	if i == -1 {
+		err = fmt.Errorf("cannot find . in %s", fields[2])
+		goto Error
+	}
+	ss, err = strconv.Atoi(fields[2][:i])
+	if err != nil {
+		goto Error
+	}
+
+	return ((hh*60)+mm)*60 + ss
+
+Error:
+	log.Println("Cannot parse duration string", s)
+	if err != nil {
+		log.Println(err)
+	}
+	return 0
+
 }
 
 func ReadMediaDir(root string) (*RootMediaDirectory, error) {
@@ -137,7 +183,8 @@ func getOneMediaInfo(file *MediaFile) {
 		line = strings.TrimLeft(line, " ")
 		lineWords := strings.Split(line, " ")
 		if len(lineWords) > 1 && lineWords[0] == "Duration:" {
-			file.Duration = strings.TrimSuffix(lineWords[1], ",")
+			file.DurationString = strings.TrimSuffix(lineWords[1], ",")
+			file.DurationSeconds = parseDurationString(file.DurationString)
 		} else if len(lineWords) > 2 && lineWords[0] == "title" {
 			title := strings.TrimLeft(line[6:], " ")
 			title = strings.TrimLeft(title[2:], " ")

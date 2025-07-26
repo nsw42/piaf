@@ -6,16 +6,19 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nsw42/piaf/mediadir"
 )
 
 type GetStatusResponse struct {
-	Status     string  `json:"state"`
-	NowPlaying *string `json:"now_playing"`
-	Speed      string  `json:"speed"`
-	Volume     int     `json:"volume"` // 0 <= Volume <= 100
+	Status        string   `json:"state"`
+	NowPlaying    *string  `json:"now_playing"`
+	TrackDuration *int     `json:"duration"`
+	Position      *float64 `json:"position"`
+	Speed         string   `json:"speed"`
+	Volume        int      `json:"volume"` // 0 <= Volume <= 100
 }
 
 type TemplatePageArgs struct {
@@ -28,9 +31,11 @@ func ConfigureRouter() *gin.Engine {
 	router := gin.Default()
 	router.GET("/", func(c *gin.Context) { c.Redirect(http.StatusMovedPermanently, "/media/") })
 	router.GET("/media/*path", getIndexPageHandler)
+	router.GET("/player/control", getControlPageHandler)
 	router.PUT("/player/play/*path", playHandler)
 	router.PUT("/player/pause", pauseHandler)
 	router.PUT("/player/resume", resumeHandler)
+	router.PUT("/player/seek", seekHandler)
 	router.GET("/player/status", getPlayerStatusHandler)
 	router.PUT("/player/speed", speedHandler)
 	router.PUT("/player/volume", volumeHandler)
@@ -139,35 +144,70 @@ func getIndexPageHandler(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func playerStateString(state PlayerState) string {
-	switch state {
-	case PlayerStateStopped:
-		return "stopped"
-	case PlayerStatePlaying:
-		return "playing"
-	case PlayerStatePaused:
-		return "paused"
-	default:
-		return "unknown"
+func getControlPageHandler(c *gin.Context) {
+	type ControlPageArgs struct {
+		TemplatePageArgs
+		CurrentStatus string
 	}
+	var pageArgs ControlPageArgs
+	if MediaPlayer.NowPlaying == nil {
+		pageArgs = ControlPageArgs{
+			TemplatePageArgs: TemplatePageArgs{
+				RequestPath:     "",
+				RequestPathElts: make([][2]string, 0),
+			},
+			CurrentStatus: MediaPlayer.State.String(),
+		}
+	} else {
+		pageArgs = ControlPageArgs{
+			TemplatePageArgs: TemplatePageArgs{
+				RequestPath:     MediaPlayer.NowPlaying.RelativePath,
+				RequestPathElts: formatPathElts(splitPath(MediaPlayer.NowPlaying.RelativePath)),
+			},
+			CurrentStatus: MediaPlayer.State.String(),
+		}
+	}
+	pageTemplate, err := getTemplate("control.templ")
+	if err != nil || pageTemplate == nil {
+		log.Println("Unable to read template control.templ", err)
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	err = pageTemplate.Execute(c.Writer, pageArgs)
+	if err != nil {
+		log.Println("Failed executing template:", err)
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusOK)
 }
 
 func getPlayerStatusHandler(c *gin.Context) {
 	var nowPlaying *string = nil
-	if MediaPlayer.NowPlaying != "" {
-		nowPlaying = &MediaPlayer.NowPlaying
+	var duration *int = nil
+	var posValue float64
+	var position *float64 = nil
+	if MediaPlayer.NowPlaying != nil {
+		nowPlaying = &MediaPlayer.NowPlaying.RelativePath
+		duration = &MediaPlayer.NowPlaying.DurationSeconds
+		posValue = MediaPlayer.GetPosition().Seconds()
+		position = &posValue
 	}
 	response := GetStatusResponse{
-		Status:     playerStateString(MediaPlayer.State),
-		NowPlaying: nowPlaying,
-		Speed:      MediaPlayer.SpeedString,
-		Volume:     MediaPlayer.Volume,
+		Status:        MediaPlayer.State.String(),
+		NowPlaying:    nowPlaying,
+		TrackDuration: duration,
+		Position:      position,
+		Speed:         MediaPlayer.SpeedString,
+		Volume:        MediaPlayer.Volume,
 	}
 	c.JSON(http.StatusOK, response)
 }
 
 func playHandler(c *gin.Context) {
-	displayPath, pathElts := getUriPathElements(c) // TODO: This would make more sense as a query param than a uri param
+	_, pathElts := getUriPathElements(c) // TODO: This would make more sense as a query param than a uri param
 	if len(pathElts) == 0 {
 		// No file to play
 		c.Status(http.StatusNotFound)
@@ -181,10 +221,9 @@ func playHandler(c *gin.Context) {
 		return
 	}
 
-	MediaPlayer.Play(file.Path, Args.EnableSpeedControl, func() {
+	MediaPlayer.Play(file, Args.EnableSpeedControl, func() {
 		Media.MarkFilePlayed(file)
 	})
-	MediaPlayer.NowPlaying = displayPath
 
 	c.Status(http.StatusNoContent)
 }
@@ -205,6 +244,22 @@ func resumeHandler(c *gin.Context) {
 	} else {
 		c.Status(http.StatusConflict)
 	}
+}
+
+func seekHandler(c *gin.Context) {
+	arg := c.Query("p")
+	positionSeconds, err := strconv.ParseFloat(arg, 64)
+	if err != nil {
+		log.Println("Unable to parse ", arg)
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	if err = MediaPlayer.SetPosition(time.Duration(positionSeconds * float64(time.Second))); err != nil {
+		log.Println(err)
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	c.Status(http.StatusNoContent)
 }
 
 func speedHandler(c *gin.Context) {

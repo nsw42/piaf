@@ -22,9 +22,10 @@ type GetStatusResponse struct {
 }
 
 type TemplatePageArgs struct {
-	RequestPath        string
-	RequestPathElts    [][2]string
-	EnableSpeedControl bool
+	RequestPath              string
+	RequestPathElts          [][2]string
+	EnableSpeedControl       bool
+	IncludeFooterPauseResume bool
 }
 
 func ConfigureRouter() *gin.Engine {
@@ -128,9 +129,10 @@ func getIndexPageHandler(c *gin.Context) {
 		MediaDir *mediadir.MediaDirectory
 	}{
 		TemplatePageArgs: TemplatePageArgs{
-			RequestPath:        path,
-			RequestPathElts:    linkPathElts,
-			EnableSpeedControl: Args.EnableSpeedControl,
+			RequestPath:              path,
+			RequestPathElts:          linkPathElts,
+			EnableSpeedControl:       Args.EnableSpeedControl,
+			IncludeFooterPauseResume: true,
 		},
 		MediaDir: mediaDir,
 	}
@@ -153,8 +155,10 @@ func getControlPageHandler(c *gin.Context) {
 	if MediaPlayer.NowPlaying == nil {
 		pageArgs = ControlPageArgs{
 			TemplatePageArgs: TemplatePageArgs{
-				RequestPath:     "",
-				RequestPathElts: make([][2]string, 0),
+				RequestPath:              "",
+				RequestPathElts:          make([][2]string, 0),
+				EnableSpeedControl:       Args.EnableSpeedControl,
+				IncludeFooterPauseResume: false,
 			},
 			CurrentStatus: MediaPlayer.State.String(),
 		}

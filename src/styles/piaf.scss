@@ -20,6 +20,8 @@ $form-range-thumb-bg:             $gray-700;
 }
 
 nav + div {
+    display: inline-block;
+    white-space: nowrap;
     margin-top: 64px;  // is also updated by JS
     margin-bottom: 80px;
 }
@@ -40,9 +42,12 @@ div.navbar-nav {
     padding-bottom: 8px;
 }
 
-
 .volume-container {
     width: 25%;
+}
+
+.big-volume-container {
+    width: 50%;
 }
 
 #speed-menu-button {
@@ -69,32 +74,79 @@ div.navbar-nav {
 }
 
 /* controls page: 2x2 grid, plus a full-width slider */
+
+/* control positions and sizes: */
+:root {
+    /* defaults */
+    --piaf-big-control-size: 10vw;
+    --piaf-ctrl-col-x: 20%;
+    --piaf-ctrl-row-1-y: 10%;
+    --piaf-ctrl-row-2-y: 40%;
+    --piaf-ctrl-row-3-y: 70%;
+
+    /* overrides */
+    /* small devices, e.g. iPhone SE */
+    @media (orientation: landscape) and (max-height: 500px) {
+        --piaf-big-control-size: 6vh;
+        --piaf-ctrl-row-1-y: 20%;
+        --piaf-ctrl-row-2-y: 40%;
+        --piaf-ctrl-row-3-y: 55%;
+    }
+    @media (orientation: portrait) and (max-width: 500px) {
+        --piaf-big-control-size: 10vh;
+        --piaf-ctrl-col-x: 10%;
+        --piaf-ctrl-row-1-y: 15%;
+        --piaf-ctrl-row-2-y: 45%;
+    }
+}
+
+$show-control-boundaries: false;
+
 .piaf-controls-row-1 {
+    @if $show-control-boundaries {
+        background-color: red;
+        width: 100%;
+        height: calc(var(--piaf-big-control-size) + 24px);
+    }
+
     position: fixed;
-    top: 10%;
-    height: 30vh;
+    fill-opacity: 1;
+    top: var(--piaf-ctrl-row-1-y);
 }
 
 .piaf-controls-row-2 {
+    @if $show-control-boundaries {
+        background-color: green;
+        width: 100%;
+        height: calc(var(--piaf-big-control-size) + 24px);
+    }
+
     position: fixed;
-    top: 50%;
-    height: 30vh;
+    top: var(--piaf-ctrl-row-2-y);
+}
+
+.piaf-controls-row-3 {
+    @if $show-control-boundaries {
+        background-color: blue;
+    }
+
+    position: fixed;
+    top: var(--piaf-ctrl-row-3-y);
+    left: 10%;
+    right: 10%;
+    height: 64px;
 }
 
 .piaf-controls-col-1 {
     position: fixed;
-    left: 20%;
+    left: var(--piaf-ctrl-col-x);
 }
 
 .piaf-controls-col-2 {
     position: fixed;
-    right: 20%;
+    right: var(--piaf-ctrl-col-x);
 }
 
-.piaf-controls-row-3 {
-    position: fixed;
-    top: 80%;
-    left: 20%;
-    right: 20%;
-    height: 96px;
+.piaf-big-control-icon {
+    font-size: var(--piaf-big-control-size);
 }

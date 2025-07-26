@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta name="viewport" content="width=device-width">
 <link href="/assets/piaf.css" rel="stylesheet">
 <script src="https://kit.fontawesome.com/b06f37c98e.js" crossorigin="anonymous"></script>
 <script src="/assets/bootstrap.bundle.min.js"></script>
@@ -11,7 +12,7 @@
 <body>
 
 <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark">
-  <div class="container-fluid d-flex justify-content-between">
+  <div class="container-fluid d-flex flex-nowrap justify-content-between">
     <a class="navbar-brand border border-0" href="/media">Piaf</a>
     <div class="navbar-nav border border-0 navbar-text h1">
       {{- range .RequestPathElts -}}
@@ -53,12 +54,18 @@
 
   {{ if .IncludeFooterPauseResume }}
     <div class="mx-4">
-      <button id="resume" class="btn btn-primary piaf-btn-resume me-5"><i class="fa-solid fa-2x fa-fw fa-play"></i></button>
+      <button id="resume" class="btn btn-primary piaf-btn-resume me-1"><i class="fa-solid fa-2x fa-fw fa-play"></i></button>
       <button id="pause" class="btn btn-primary piaf-btn-pause"><i class="fa-solid fa-2x fa-fw fa-pause"></i></button>
     </div>
   {{ end }}
 
-  <div class="d-flex flex-column align-items-center volume-container">
+  <div class="d-flex flex-column align-items-center
+              {{ if .IncludeFooterPauseResume -}}
+                  volume-container
+              {{- else -}}
+                  big-volume-container
+              {{- end -}}
+             ">
     <input type="range" class="form-range volume-slider" id="volume-slider" min="0" max="100">
     <span id="volume-text">50</span>
   </div>

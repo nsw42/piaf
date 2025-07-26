@@ -8,7 +8,9 @@ $form-range-thumb-bg:             $gray-700;
 
 @import "bootstrap/scss/bootstrap";
 
-// Piaf-specific bits
+// Piaf-specific styles
+
+// base.templ header
 
 .banner-path-item:not(:first-child)::before {
     display: inline-block;
@@ -30,6 +32,25 @@ div.navbar-nav {
     text-overflow: ellipsis;
 }
 
+// base.templ footer
+
+.footer {
+    border-top: 4px solid var(--bs-body-bg);
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+
+.volume-container {
+    width: 25%;
+}
+
+#speed-menu-button {
+    min-width: 6em;  // stop the button fluctuating in size
+}
+
+// Index pages
+
 .piaf-media-table {
     .btn-link {
         --bs-btn-padding-y: 0px;
@@ -45,20 +66,6 @@ div.navbar-nav {
     col:nth-child(3) {
         width: 0;  // sets to 'as small as possible', not invisible
     }
-}
-
-.footer {
-    border-top: 4px solid var(--bs-body-bg);
-    padding-top: 8px;
-    padding-bottom: 8px;
-}
-
-.volume-container {
-    width: 25%;
-}
-
-#speed-menu-button {
-    min-width: 6em;  // stop the button fluctuating in size
 }
 
 /* controls page: 2x2 grid, plus a full-width slider */

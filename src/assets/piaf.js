@@ -249,7 +249,7 @@ function showNowPlaying(data) {
 
     nowPlayingFile = data['now_playing']
     for (const tr of trMediaFiles) {
-        const rowPath = tr.getAttribute('data-path')
+        const rowPath = tr.getAttribute('data-file')
         if (rowPath == nowPlayingFile) {
             tr.classList.add('table-info')
         } else {

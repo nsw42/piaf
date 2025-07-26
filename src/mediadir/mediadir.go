@@ -20,8 +20,9 @@ type RootMediaDirectory struct {
 }
 
 type MediaDirectory struct {
-	Leaf           string                     // just the final element of the path
+	Root           string
 	Path           string                     // the full path
+	Leaf           string                     // just the final element of the path
 	RelativePath   string                     // the full path relative to the root media parent directory
 	SubDirectories map[string]*MediaDirectory // indexed by leaf
 	Files          map[string]*MediaFile      // Each entry is a full path
@@ -111,25 +112,19 @@ func ReadMediaDir(root string) (*RootMediaDirectory, error) {
 }
 
 func readMediaDir(root, parent string) *MediaDirectory {
-	files, err := os.ReadDir(parent)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	relativePath, err := filepath.Rel(root, parent)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	rtn := &MediaDirectory{
-		Leaf:           filepath.Base(parent),
-		Path:           parent, // will be initialised to a full path
-		RelativePath:   relativePath,
-		SubDirectories: make(map[string]*MediaDirectory, 0),
-		Files:          make(map[string]*MediaFile, 0),
+		Root:         root,
+		Path:         parent, // will be initialised to a full path
+		Leaf:         filepath.Base(parent),
+		RelativePath: relativePath,
 	}
 
-	readMediaDirPopulate(rtn, root, parent, files)
+	rtn.Refresh()
 
 	if len(rtn.SubDirectories) == 0 && len(rtn.Files) == 0 {
 		return nil // don't bother showing empty directories
@@ -138,12 +133,25 @@ func readMediaDir(root, parent string) *MediaDirectory {
 	return rtn
 }
 
-func readMediaDirPopulate(mediaDir *MediaDirectory, root, parent string, files []os.DirEntry) {
+func (mediaDir *MediaDirectory) RefreshAndGetMetadata() {
+	mediaDir.Refresh()
+	go getMediaLengths(mediaDir)
+}
+
+func (mediaDir *MediaDirectory) Refresh() {
+	// Note that this doesn't remove the directory from its parent if it's now empty
+	files, err := os.ReadDir(mediaDir.Path)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	mediaDir.SubDirectories = make(map[string]*MediaDirectory, 0)
+	mediaDir.Files = make(map[string]*MediaFile, 0)
 	for _, file := range files {
 		fileName := file.Name()
-		subPath := fmt.Sprintf("%s/%s", parent, fileName)
+		subPath := fmt.Sprintf("%s/%s", mediaDir.Path, fileName)
 		if file.IsDir() {
-			subdir := readMediaDir(root, subPath)
+			subdir := readMediaDir(mediaDir.Root, subPath)
 			if subdir != nil {
 				mediaDir.SubDirectories[file.Name()] = subdir
 			}

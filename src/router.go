@@ -31,8 +31,8 @@ type TemplatePageArgs struct {
 func ConfigureRouter() *gin.Engine {
 	router := gin.Default()
 	router.GET("/", func(c *gin.Context) { c.Redirect(http.StatusMovedPermanently, "/media/") })
-	router.GET("/media/*path", getIndexPageHandler)
-	router.GET("/player/control", getControlPageHandler)
+	router.GET("/media/*path", indexPageHandler)
+	router.GET("/player/control", controlPageHandler)
 	router.PUT("/player/play/*path", playHandler)
 	router.PUT("/player/pause", pauseHandler)
 	router.PUT("/player/resume", resumeHandler)
@@ -104,7 +104,7 @@ func formatPathElts(pathElts []string) [][2]string {
 	return linkPathElts
 }
 
-func getIndexPageHandler(c *gin.Context) {
+func indexPageHandler(c *gin.Context) {
 	path, pathElts := getUriPathElements(c)
 
 	mediaDir := findMediaDir(pathElts)
@@ -145,7 +145,7 @@ func getIndexPageHandler(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func getControlPageHandler(c *gin.Context) {
+func controlPageHandler(c *gin.Context) {
 	type ControlPageArgs struct {
 		TemplatePageArgs
 		CurrentStatus string

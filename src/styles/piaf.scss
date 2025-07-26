@@ -3,7 +3,8 @@
 // Bootstrap customisation
 $form-range-thumb-width:          2rem;
 $form-range-thumb-height:         2rem;
-$form-range-thumb-border-radius:  2rem;
+$form-range-thumb-border-radius:  1rem;
+$form-range-thumb-bg:             $gray-700;
 
 @import "bootstrap/scss/bootstrap";
 

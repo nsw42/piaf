@@ -17,6 +17,7 @@ let trMediaFiles;
 let nowPlayingFile;
 
 let disableWhenStopped;
+let disableWhenInitialising;
 let disableWhenPaused;
 let enableWhenPaused;
 let disableWhenPlaying;
@@ -36,9 +37,11 @@ function initPiaf() {
             // and go to the player control page
             const mediaFile = button.getAttribute("data-file")
             const apiEndpoint = (mediaFile == nowPlayingFile) ? "/player/resume" : "/player/play/" + mediaFile
-            fetch(apiEndpoint, { method: "PUT" }).then(() => {
-                gotoPage('/player/control')
-            })
+            fetch(apiEndpoint, { method: "PUT" })
+            // Don't wait for the fetch to return - that only happens when playback actually starts,
+            // which might be a while in the case of having to convert a long .m4a to .wav. This way
+            // there's immediate visual feedback that the click has been seen.
+            gotoPage('/player/control')
         })
     }
 
@@ -113,25 +116,44 @@ function initPiaf() {
 
     trMediaFiles = document.getElementsByClassName('piaf-media-files')
 
-    disableWhenStopped = pauseButtons.concat(resumeButtons)
-    disableWhenStopped.push(speedMenuButton)
-    if (positionSlider) {
-        disableWhenStopped.push(positionSlider)
-    }
+    // Prepare the lists of buttons:
+    // for each player state (stopped, initialising, paused, playing)
+    // need to ensure that each button goes into either disable or
+    // enable. The list of buttons:
+    //  - pause
+    //  - resume
+    //  - speed (0 or 1)
+    //  - position (0 or 1)
+    //  - fast backward (0 or 1)
+    //  - fast forward (0 or 1)
+    //  - volume
+
+    let allControls = pauseButtons.concat(resumeButtons)
+    allControls.push(speedMenuButton)
+    allControls.push(positionSlider)
+    allControls.push(fastBackwardButton)
+    allControls.push(fastForwardButton)
+    allControls.push(volumeSlider)
+    allControls = allControls.filter(c => c)
+
+    disableWhenStopped = allControls
+    disableWhenInitialising = allControls
 
     disableWhenPaused = pauseButtons
     enableWhenPaused = Array.from(resumeButtons)
     enableWhenPaused.push(speedMenuButton)
-    if (positionSlider) {
-        enableWhenPaused.push(positionSlider)
-    }
+    enableWhenPaused.push(positionSlider)
+    enableWhenPaused.push(fastBackwardButton)
+    enableWhenPaused.push(fastForwardButton)
+    enableWhenPaused.push(volumeSlider)
 
-    disableWhenPlaying = resumeButtons
     enableWhenPlaying = Array.from(pauseButtons)
+    disableWhenPlaying = resumeButtons
     enableWhenPlaying.push(speedMenuButton)
-    if (positionSlider) {
-        enableWhenPlaying.push(positionSlider)
-    }
+    enableWhenPlaying.push(positionSlider)
+    enableWhenPlaying.push(fastBackwardButton)
+    enableWhenPlaying.push(fastForwardButton)
+    enableWhenPlaying.push(volumeSlider)
 
     setTimeout(updateNowPlaying, 1000)
 }
@@ -214,6 +236,9 @@ function showNowPlaying(data) {
                     disableElements(disableWhenStopped)
                 }
             }
+            break
+        case 'initialising':
+            disableElements(disableWhenInitialising)
             break
         case 'paused':
             disableElements(disableWhenPaused)

@@ -22,6 +22,7 @@ type PlayerState int
 
 const (
 	PlayerStateStopped PlayerState = iota
+	PlayerStateInitialising
 	PlayerStatePlaying
 	PlayerStatePaused
 )
@@ -30,6 +31,8 @@ func (state PlayerState) String() string {
 	switch state {
 	case PlayerStateStopped:
 		return "stopped"
+	case PlayerStateInitialising:
+		return "initialising"
 	case PlayerStatePlaying:
 		return "playing"
 	case PlayerStatePaused:
@@ -70,6 +73,9 @@ func calculateVolumeRatio(volume int) float64 {
 
 func (player *Player) Play(file *mediadir.MediaFile, enableSpeedControl bool, eofCallback func()) error {
 	player.Close()
+
+	player.State = PlayerStateInitialising // Decoding may take a while
+	player.NowPlaying = file
 
 	f, err := os.Open(file.Path)
 	if err != nil {
@@ -126,7 +132,6 @@ func (player *Player) Play(file *mediadir.MediaFile, enableSpeedControl bool, eo
 
 	speaker.Play(player.volumeStreamer)
 
-	player.NowPlaying = file
 	player.State = PlayerStatePlaying
 
 	return nil

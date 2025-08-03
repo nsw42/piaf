@@ -137,6 +137,12 @@ func (player *Player) Close() error {
 		player.pauser.Streamer = nil
 	}
 
+	if player.seeker != nil {
+		speaker.Lock()
+		player.seeker.Close()
+		speaker.Unlock()
+	}
+
 	return nil
 }
 

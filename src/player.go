@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -21,7 +22,8 @@ import (
 type PlayerState int
 
 const (
-	PlayerStateStopped PlayerState = iota
+	PlayerStateUninitialised PlayerState = iota
+	PlayerStateStopped
 	PlayerStateInitialising
 	PlayerStatePlaying
 	PlayerStatePaused
@@ -29,6 +31,8 @@ const (
 
 func (state PlayerState) String() string {
 	switch state {
+	case PlayerStateUninitialised:
+		return "uninitialised"
 	case PlayerStateStopped:
 		return "stopped"
 	case PlayerStateInitialising:
@@ -60,7 +64,7 @@ type Player struct {
 
 func NewPlayer() *Player {
 	return &Player{
-		State:       PlayerStateStopped,
+		State:       PlayerStateUninitialised,
 		Speed:       1.0,
 		SpeedString: "1x",
 		Volume:      50,
@@ -73,6 +77,8 @@ func calculateVolumeRatio(volume int) float64 {
 
 func (player *Player) Play(file *mediadir.MediaFile, enableSpeedControl bool, eofCallback func()) error {
 	player.Close()
+
+	initialisationNecessary := player.State == PlayerStateUninitialised
 
 	player.State = PlayerStateInitialising // Decoding may take a while
 	player.NowPlaying = file
@@ -128,7 +134,13 @@ func (player *Player) Play(file *mediadir.MediaFile, enableSpeedControl bool, eo
 		Silent:   silent,
 	}
 
-	speaker.Init(player.format.SampleRate, player.format.SampleRate.N(time.Second/4))
+	if initialisationNecessary {
+		err = speaker.Init(player.format.SampleRate, player.format.SampleRate.N(time.Second/4))
+		if err != nil {
+			log.Fatal("Failed to initialise speaker", err)
+		}
+	}
+	// looks like we just have to hope the sample rate is the same if we want to play something else
 
 	speaker.Play(player.volumeStreamer)
 
@@ -138,7 +150,7 @@ func (player *Player) Play(file *mediadir.MediaFile, enableSpeedControl bool, eo
 }
 
 func (player *Player) Close() error {
-	if player.State != PlayerStateStopped {
+	if player.State != PlayerStateStopped && player.State != PlayerStateUninitialised {
 		player.pauser.Streamer = nil
 	}
 

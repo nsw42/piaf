@@ -4,6 +4,7 @@ let pauseButtons;
 let resumeButtons;
 let fastBackwardButton;
 let fastForwardButton;
+let controlLinkButton;
 let speedMenuButton;
 let positionSlider;
 let positionText;
@@ -44,6 +45,8 @@ function initPiaf() {
             gotoPage('/player/control')
         })
     }
+
+    controlLinkButton = document.getElementById('control-link')
 
     pauseButtons = Array.from(document.getElementsByClassName('piaf-btn-pause'))
     for (const button of pauseButtons) {
@@ -117,9 +120,10 @@ function initPiaf() {
     trMediaFiles = document.getElementsByClassName('piaf-media-files')
 
     // Prepare the lists of buttons:
-    // for each player state (stopped, initialising, paused, playing)
+    // for each player state (uninitialised / stopped, initialising, paused, playing)
     // need to ensure that each button goes into either disable or
     // enable. The list of buttons:
+    //  - control link
     //  - pause
     //  - resume
     //  - speed (0 or 1)
@@ -129,6 +133,7 @@ function initPiaf() {
     //  - volume
 
     let allControls = pauseButtons.concat(resumeButtons)
+    allControls.push(controlLinkButton)
     allControls.push(speedMenuButton)
     allControls.push(positionSlider)
     allControls.push(fastBackwardButton)
@@ -140,20 +145,10 @@ function initPiaf() {
     disableWhenInitialising = allControls
 
     disableWhenPaused = pauseButtons
-    enableWhenPaused = Array.from(resumeButtons)
-    enableWhenPaused.push(speedMenuButton)
-    enableWhenPaused.push(positionSlider)
-    enableWhenPaused.push(fastBackwardButton)
-    enableWhenPaused.push(fastForwardButton)
-    enableWhenPaused.push(volumeSlider)
+    enableWhenPaused = allControls.filter(c => disableWhenPaused.indexOf(c) == -1)
 
-    enableWhenPlaying = Array.from(pauseButtons)
     disableWhenPlaying = resumeButtons
-    enableWhenPlaying.push(speedMenuButton)
-    enableWhenPlaying.push(positionSlider)
-    enableWhenPlaying.push(fastBackwardButton)
-    enableWhenPlaying.push(fastForwardButton)
-    enableWhenPlaying.push(volumeSlider)
+    enableWhenPlaying = allControls.filter(c => disableWhenPlaying.indexOf(c) == -1)
 
     setTimeout(updateNowPlaying, 1000)
 }
@@ -219,6 +214,7 @@ function formatDuration(secondsInt) {
 function showNowPlaying(data) {
     switch (data['state']) {
         case 'stopped':
+        case 'uninitialised':
             if (location.pathname == '/player/control') {
                 // not sensible to stay on this page
                 let mediaDir = ""

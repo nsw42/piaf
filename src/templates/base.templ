@@ -49,7 +49,7 @@
 <div class="w-100 fixed-bottom footer d-flex justify-content-evenly align-items-center bg-primary">
   {{ if .IncludeFooterPauseResume }}
     <div class="mx-4">
-      <a class="btn btn-primary" href="/player/control"><i class="fas fa-sliders-h"></i></a>
+      <button class="btn btn-primary" id="control-link" onclick="location.href='/player/control'"><i class="fas fa-fw fa-sliders-h"></i></button>
     </div>
   {{ end }}
 
@@ -70,8 +70,8 @@
 
   {{ if .IncludeFooterPauseResume }}
     <div class="mx-4">
-      <button id="resume" class="btn btn-primary piaf-btn-resume me-1"><i class="fa-solid fa-2x fa-fw fa-play"></i></button>
-      <button id="pause" class="btn btn-primary piaf-btn-pause"><i class="fa-solid fa-2x fa-fw fa-pause"></i></button>
+      <button type="button" id="resume" class="btn btn-primary piaf-btn-resume me-1"><i class="fa-solid fa-2x fa-fw fa-play"></i></button>
+      <button type="button" id="pause" class="btn btn-primary piaf-btn-pause"><i class="fa-solid fa-2x fa-fw fa-pause"></i></button>
     </div>
   {{ end }}
 

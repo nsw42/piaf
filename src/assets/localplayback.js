@@ -21,14 +21,8 @@ class LocalPlayback {
             },
             onend: () => {
                 windowMediaControls.showPlaybackState('stopped')
-                // TODO
-                // $('#track_'+trackId).removeClass('active-track');
-                // if (localTrackIndex + 1 < playlistTrackIds.length) {
-                //     localPlay(localTrackIndex + 1);
-                // } else {
-                //     hideButtons(['#local-previous', '#local-pause', '#local-fetching', '#local-resume', '#local-next', '#local-volume']);
-                //     currentTrackId = localTrackIndex = null;
-                // }
+                windowTrackDisplay.showNoTrackPlaying()
+                // Q: Auto play the next??
             },
             onpause: () => {
                 if (!this.fetching) {
@@ -43,6 +37,7 @@ class LocalPlayback {
         this.fetching = true;
         this.howl.play()
         windowMediaControls.showPlaybackState('fetching')
+        windowTrackDisplay.showActiveTrack(mediaFile)
     }
 
     fastBackward() {

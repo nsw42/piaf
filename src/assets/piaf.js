@@ -8,7 +8,6 @@ let modeButtonLocalPlayback;
 let contentsDiv;
 let navbar;
 let controlLinkButton;
-let trMediaFiles;
 let nowPlayingFile;
 
 let playerLocalPlaback;
@@ -16,9 +15,11 @@ let playerRemoteControl;
 let currentPlayer;
 
 let windowMediaControls;
+let windowTrackDisplay;
 
 function initPiaf() {
     windowMediaControls = new WindowMediaControls()
+    windowTrackDisplay = new WindowTrackDisplay()
 
     contentsDiv = document.getElementById('main-content')
     navbar = document.querySelector('.navbar.fixed-top')
@@ -39,8 +40,6 @@ function initPiaf() {
             currentPlayer.playFile(mediaFile)
         })
     }
-
-    trMediaFiles = document.getElementsByClassName('piaf-media-files')
 
     playerRemoteControl = new RemoteControl()
     playerLocalPlaback = new LocalPlayback()

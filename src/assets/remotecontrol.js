@@ -1,6 +1,7 @@
 // control of a remote piaf playback system
 
 class RemoteControl {
+    // The player interface:
     currentTrackDuration = 0
     currentPosition = 0
 
@@ -70,15 +71,6 @@ class RemoteControl {
         this.currentTrackDuration = data['duration']
         windowMediaControls.showTrackPositionAndDuration(this.currentPosition, this.currentTrackDuration)
         windowMediaControls.showVolume(data['volume'])
-
-        nowPlayingFile = data['now_playing']
-        for (const tr of trMediaFiles) {
-            const rowPath = tr.getAttribute('data-file')
-            if (rowPath == nowPlayingFile) {
-                tr.classList.add('table-info')
-            } else {
-                tr.classList.remove('table-info')
-            }
-        }
+        windowTrackDisplay.showActiveTrack(data['now_playing'])
     }
 }

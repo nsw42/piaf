@@ -6,6 +6,11 @@
 <link href="/assets/piaf.css" rel="stylesheet">
 <script src="https://kit.fontawesome.com/b06f37c98e.js" crossorigin="anonymous"></script>
 <script src="/assets/bootstrap.bundle.min.js"></script>
+<script src="/assets/howler.core.js"></script>
+<script src="/assets/windowmediacontrols.js"></script>
+<script src="/assets/localplayback.js"></script>
+<script src="/assets/remotecontrol.js"></script>
+<script src="/assets/utils.js"></script>
 <script src="/assets/piaf.js"></script>
 <title>{{.RequestPath}} - piaf</title>
 
@@ -23,8 +28,8 @@
 
 <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark">
   <div class="container-fluid d-flex flex-nowrap justify-content-between">
-    <a class="navbar-brand border border-0" href="/media">Piaf</a>
-    <div class="navbar-nav border border-0 navbar-text h1">
+    <a class="navbar-brand border border-0 piaf-nav-fixed-size" href="/media">Piaf</a>
+    <div class="navbar-nav border border-0 navbar-text flex-fill h1">
       {{- range .RequestPathElts -}}
         <span class="banner-path-item">
           {{- if index . 0 -}}
@@ -35,7 +40,10 @@
         </span>
       {{end}}
     </div>
-    <span class="navbar-brand opacity-0">Piaf</span> {{/* hack to ensure the path is centered */}}
+    <div class="navbar-brand border border-0 piaf-nav-fixed-size">
+        <button type="button" id="mode-indicator-remote" class="btn btn-primary"><i class="fas fa-2x fa-fw fa-volume-high"></i></button>
+        <button type="button" id="mode-indicator-local" class="btn btn-primary d-none"><i class="fas fa-2x fa-fw fa-headphones"></i>
+    </div>
   </div>
 </nav>
 
@@ -70,8 +78,9 @@
 
   {{ if .IncludeFooterPauseResume }}
     <div class="mx-4">
-      <button type="button" id="resume" class="btn btn-primary piaf-btn-resume me-1"><i class="fa-solid fa-2x fa-fw fa-play"></i></button>
-      <button type="button" id="pause" class="btn btn-primary piaf-btn-pause"><i class="fa-solid fa-2x fa-fw fa-pause"></i></button>
+      <i id="fetching" class="fa-solid fa-hourglass-half fa-2x fa-fw d-none show-when-fetching"></i>
+      <button type="button" id="resume" class="btn btn-primary piaf-btn-resume me-1 hide-when-fetching"><i class="fa-solid fa-2x fa-fw fa-play"></i></button>
+      <button type="button" id="pause" class="btn btn-primary piaf-btn-pause hide-when-fetching"><i class="fa-solid fa-2x fa-fw fa-pause"></i></button>
     </div>
   {{ end }}
 

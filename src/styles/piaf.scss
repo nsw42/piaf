@@ -31,7 +31,14 @@ div.navbar-nav {
     white-space: nowrap;
     overflow: hidden;
     justify-content: center;
+    text-align: center;
     text-overflow: ellipsis;
+}
+
+.piaf-nav-fixed-size {
+    --bs-navbar-brand-margin-end: 0px;
+    width: 4em;
+    padding: 0px;
 }
 
 // base.templ footer

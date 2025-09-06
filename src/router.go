@@ -33,6 +33,7 @@ func ConfigureRouter() *gin.Engine {
 	router := gin.Default()
 	router.GET("/", func(c *gin.Context) { c.Redirect(http.StatusMovedPermanently, "/media/") })
 	router.GET("/media/*path", indexPageHandler)
+	router.Static("/mediafile", Args.MediaParentDirectory+"/Unplayed")
 	router.GET("/player/control", controlPageHandler)
 	router.PUT("/player/play/*path", playHandler)
 	router.PUT("/player/pause", pauseHandler)

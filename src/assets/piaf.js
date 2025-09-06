@@ -34,7 +34,8 @@ function initPiaf() {
 
     for (const button of document.getElementsByClassName('piaf-play-file')) {
         button.addEventListener("click", () => {
-            const mediaFile = button.getAttribute("data-file")
+            const tr = button.closest('tr')
+            const mediaFile = tr.getAttribute("data-file")
             currentPlayer.playFile(mediaFile)
         })
     }

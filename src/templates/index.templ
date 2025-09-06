@@ -27,10 +27,10 @@
       {{- range .MediaDir.Files }}
         <tr class="piaf-media-files" data-file="{{.RelativePath}}">
           <td>
-            <button type="button" class="btn btn-link piaf-play-file piaf-play-icon" data-file="{{.RelativePath}}"><i class="fa-solid fa-play"></i></button>
+            <button type="button" class="btn btn-link piaf-play-file piaf-play-icon"><i class="fa-solid fa-play"></i></button>
           </td>
           <td>
-            <button type="button" class="btn btn-link border-0 piaf-play-file" data-file="{{.RelativePath}}">
+            <button type="button" class="btn btn-link border-0 piaf-play-file">
               {{.DisplayName}}
             </button>
           </td>

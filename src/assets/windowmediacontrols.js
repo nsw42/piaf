@@ -38,6 +38,7 @@ class WindowMediaControls {
         this.positionSlider?.addEventListener('change', (event) => {
             this.sliderDragActive = false
             const newPos = currentPlayer?.currentTrackDuration * event.target.value / 100
+            this.showTrackPosition(newPos)
             currentPlayer.seek(newPos)
         })
 

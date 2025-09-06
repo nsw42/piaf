@@ -42,7 +42,6 @@ class RemoteControl {
     }
 
     seek(newPos) {
-        positionText.innerHTML = formatDuration(newPos)  // TODO: This doesn't really belong here
         fetch(`/player/seek?p=${newPos}`, { method: "PUT" })
     }
 

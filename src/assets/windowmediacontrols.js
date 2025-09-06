@@ -103,12 +103,12 @@ class WindowMediaControls {
 
     showPlaybackState(state) {
         if (state === 'fetching') {
-            this.fetchingIndicator.classList.remove('d-none')
+            this.fetchingIndicator?.classList.remove('d-none')
             for (const e of this.hideWhenFetching) {
                 e.classList.add('d-none')
             }
         } else {
-            this.fetchingIndicator.classList.add('d-none')
+            this.fetchingIndicator?.classList.add('d-none')
             for (const e of this.hideWhenFetching) {
                 e.classList.remove('d-none')
             }

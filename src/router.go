@@ -34,6 +34,7 @@ func ConfigureRouter() *gin.Engine {
 	router.GET("/", func(c *gin.Context) { c.Redirect(http.StatusMovedPermanently, "/media/") })
 	router.GET("/media/*path", indexPageHandler)
 	router.Static("/mediafile", Args.MediaParentDirectory+"/Unplayed")
+	router.DELETE("/mediafile/*path", markPlayedHandler)
 	router.GET("/player/control", controlPageHandler)
 	router.PUT("/player/play/*path", playHandler)
 	router.PUT("/player/pause", pauseHandler)
@@ -67,7 +68,6 @@ func getUriPathElements(c *gin.Context) (string, []string) {
 	}
 
 	return path, splitPath(path)
-
 }
 
 func findMediaDir(pathElts []string) *mediadir.MediaDirectory {
@@ -82,6 +82,11 @@ func findMediaDir(pathElts []string) *mediadir.MediaDirectory {
 		}
 	}
 	return search
+}
+
+func findMediaFile(pathElts []string) *mediadir.MediaFile {
+	mediaDir := findMediaDir(pathElts[:len(pathElts)-1])
+	return mediaDir.Files[pathElts[len(pathElts)-1]]
 }
 
 func formatPathElts(pathElts []string) [][2]string {
@@ -215,6 +220,25 @@ func getPlayerStatusHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+func markPlayedHandler(c *gin.Context) {
+	_, pathElts := getUriPathElements(c)
+	if len(pathElts) == 0 {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	file := findMediaFile(pathElts)
+	if file == nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	if err := Media.MarkFilePlayed(file); err != nil {
+		log.Println(err)
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
 func playHandler(c *gin.Context) {
 	_, pathElts := getUriPathElements(c) // TODO: This would make more sense as a query param than a uri param
 	if len(pathElts) == 0 {
@@ -223,8 +247,7 @@ func playHandler(c *gin.Context) {
 		return
 	}
 
-	mediaDir := findMediaDir(pathElts[:len(pathElts)-1])
-	file := mediaDir.Files[pathElts[len(pathElts)-1]]
+	file := findMediaFile(pathElts)
 	if file == nil {
 		c.Status(http.StatusNotFound)
 		return

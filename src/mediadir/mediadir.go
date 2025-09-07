@@ -1,6 +1,7 @@
 package mediadir
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -34,6 +35,14 @@ type MediaFile struct {
 	RelativePath    string // the full path relative to the root media parent directory
 	DurationString  string // extracted from ffmpeg output
 	DurationSeconds int
+}
+
+func isFile(path string) bool {
+	stat, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return !stat.IsDir()
 }
 
 func isDir(dir string) bool {
@@ -215,10 +224,17 @@ func getMediaLengths(directory *MediaDirectory) {
 	}
 }
 
-func (media *RootMediaDirectory) MarkFilePlayed(file *MediaFile) {
+func (media *RootMediaDirectory) MarkFilePlayed(file *MediaFile) error {
+	if !isFile(file.Path) {
+		return errors.New("file not found")
+	}
 	dest := filepath.Join(media.PlayedMediaDirectory, file.RelativePath)
-	os.MkdirAll(filepath.Dir(dest), 0755)
-	os.Rename(file.Path, dest)
+	if err := os.MkdirAll(filepath.Dir(dest), 0755); err != nil {
+		return err
+	}
+	if err := os.Rename(file.Path, dest); err != nil {
+		return err
+	}
 
 	// Remove the file from our records
 	pathElts := make([]string, 0)
@@ -229,7 +245,7 @@ func (media *RootMediaDirectory) MarkFilePlayed(file *MediaFile) {
 		filePath = strings.TrimSuffix(dir, string(filepath.Separator))
 	}
 	if len(pathElts) == 0 {
-		panic("error splitting path " + file.RelativePath)
+		return errors.New("error splitting path " + file.RelativePath)
 	}
 
 	mediaDir := media.Contents
@@ -237,4 +253,5 @@ func (media *RootMediaDirectory) MarkFilePlayed(file *MediaFile) {
 		mediaDir = mediaDir.SubDirectories[dir]
 	}
 	delete(mediaDir.Files, pathElts[0])
+	return nil
 }

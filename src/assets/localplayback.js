@@ -30,6 +30,9 @@ class LocalPlayback {
                 this.removeSavedPosition(this.currentFile)
                 windowMediaControls.showPlaybackState('stopped')
                 windowTrackDisplay.showNoTrackPlaying()
+                fetch(`/mediafile/${this.currentFile}`, { method: "DELETE" }).then(() => {
+                    location.reload()
+                })
                 this.currentFile = null
                 // Q: Auto play the next??
             },

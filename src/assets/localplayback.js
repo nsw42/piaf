@@ -1,8 +1,15 @@
 // local playback, fetching files from a piaf system
 
 const localStorageVolumeKey = 'piaf-local-volume'
+const localStoragePositionsKey = 'piaf-local-positions'
 
 class LocalPlayback {
+    // The player interface:
+    currentTrackDuration = 0
+    currentPosition = 0
+
+    // Other instance variables:
+    currentFile = null
     fetching = false
     howl = null
 
@@ -20,8 +27,10 @@ class LocalPlayback {
                 console.log("howlerjs reported error code " + errorCode)
             },
             onend: () => {
+                this.removeSavedPosition(this.currentFile)
                 windowMediaControls.showPlaybackState('stopped')
                 windowTrackDisplay.showNoTrackPlaying()
+                this.currentFile = null
                 // Q: Auto play the next??
             },
             onpause: () => {
@@ -32,8 +41,13 @@ class LocalPlayback {
             onplay: () => {
                 this.fetching = false
                 windowMediaControls.showPlaybackState('playing')
+                const position = this.getSavedPosition(this.currentFile)
+                if (position !== null && position > 0) {
+                    this.howl.seek(position)
+                }
             },
         })
+        this.currentFile = mediaFile
         this.fetching = true;
         this.howl.play()
         windowMediaControls.showPlaybackState('fetching')
@@ -49,8 +63,14 @@ class LocalPlayback {
     }
 
     pause() {
-        this.howl?.pause()
-        windowMediaControls.showPlaybackState('paused')
+        if (this.howl) {
+            this.howl.pause()
+            this.currentPosition = this.howl.seek()
+            this.savePosition(this.currentFile, this.currentPosition)
+            windowMediaControls.showPlaybackState('paused')
+        } else {
+            windowMediaControls.showPlaybackState('stopped')
+        }
     }
 
     resume() {
@@ -63,6 +83,39 @@ class LocalPlayback {
 
     setSpeed(speed) {
         console.log("LocalPlayback.setSpeed: NYI")
+    }
+
+    loadSavedPositionMap() {
+        let savedPositions = localStorage.getItem(localStoragePositionsKey)
+        if (savedPositions === null || savedPositions === "") {
+            savedPositions = "{}"
+        }
+        const savedPositionsObj = JSON.parse(savedPositions)
+        return new Map(Object.entries(savedPositionsObj))
+    }
+
+    saveSavedPositionMap(savedPositionsMap) {
+        localStorage.setItem(localStoragePositionsKey, JSON.stringify(Object.fromEntries(savedPositionsMap)))
+    }
+
+    getSavedPosition(mediaFile) {
+        const savedPositionsMap = this.loadSavedPositionMap()
+        return savedPositionsMap.get(mediaFile) ?? 0
+    }
+
+    removeSavedPosition(mediaFile) {
+        let savedPositionsMap = this.loadSavedPositionMap()
+        savedPositionsMap.delete(mediaFile)
+        this.saveSavedPositionMap(savedPositionsMap)
+    }
+
+    savePosition(mediaFile, position) {
+        // load any existing saved map
+        let savedPositionsMap = this.loadSavedPositionMap()
+        // update
+        savedPositionsMap.set(mediaFile, position)
+        // save
+        this.saveSavedPositionMap(savedPositionsMap)
     }
 
     setVolume(volume) {

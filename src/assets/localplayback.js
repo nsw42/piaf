@@ -18,7 +18,7 @@ class LocalPlayback {
             src: ['/mediafile/' + mediaFile],
             preload: false,
             html5: true,
-            volume: volume,
+            volume: volume / 100.0,
             onloaderror: (soundId, errorCode) => {
                 console.log("howlerjs onloaderror: " + errorCode)
             },
@@ -130,18 +130,18 @@ class LocalPlayback {
     }
 
     getSavedVolume() {
-        let volume = localStorage.getItem(localStorageVolumeKey)
+        let volume = localStorage.getItem(localStorageVolumeKey) // 0 <= volume <= 100
         if (volume === null || isNaN(volume)) {
-            volume = 1.0
-        } else {
-            volume = Number(volume)
-            if (volume < 0) {
-                volume = 0
-            } else if (volume > 1.0) {
-                volume = 1.0
-            }
+            volume = 100
         }
-        windowMediaControls.showVolume(volume * 100.0)
+
+        volume = Number(volume)
+        if (volume < 0) {
+            volume = 0
+        } else if (volume > 100) {
+            volume = 100
+        }
+        windowMediaControls.showVolume(volume)
         return volume
     }
 

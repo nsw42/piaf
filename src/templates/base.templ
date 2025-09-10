@@ -3,6 +3,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width">
+<link href="/assets/animate.min.css" rel="stylesheet">
 <link href="/assets/piaf.css" rel="stylesheet">
 <script src="https://kit.fontawesome.com/b06f37c98e.js" crossorigin="anonymous"></script>
 <script src="/assets/bootstrap.bundle.min.js"></script>
@@ -54,47 +55,83 @@
 
 </div>
 
-{{/* footer */}}
-<div class="w-100 fixed-bottom footer d-flex justify-content-evenly align-items-center bg-primary">
-  {{ if .IncludeFooterPauseResume }}
-    <div class="mx-4">
-      <button class="btn btn-primary" id="control-link" onclick="location.href='/player/control'"><i class="fas fa-fw fa-sliders-h"></i></button>
-    </div>
-  {{ end }}
+{{/* footer - two variants: one with media controls (for index page) and one without (for controls page) */}}
+{{ if .IncludeFooterPauseResume }}
+  <div class="w-100 fixed-bottom footer d-flex flex-column">
+    {{/* row 0: the footer border */}}
+    <div class="w-100 footer-top-border bg-body">&nbsp;</div>
 
-  {{ if .EnableSpeedControl }}
-    <div class="dropup dropup-center bg-primary">
-      <button id="speed-menu-button" class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        Speed
-      </button>
-      <ul class="dropdown-menu">
-        <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.0">1x</button></li>
-        <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.1">1.1x</button></li>
-        <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.25">1.25x</button></li>
-        <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.33">1.33x</button></li>
-        <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.5">1.5x</button></li>
-      </ul>
+    {{/* row 1: the position slider */}}
+    <div id="index-position-slider" class="w-100 d-flex flex-row justify-content-evenly align-items-center bg-primary position-relative d-none">
+      <input type="range" class="position-absolute bottom-0 form-range w-100" id="position-slider" min="0" max="100">
+      <span id="position-display" class="position-absolute top-0 start-50 text-center translate-middle-x"><span class="opacity-0">00</span>:<span class="opacity-0">00</span>:<span class="opacity-0">00</span></span>
+      <span id="track-duration" class="position-absolute top-0 end-0 pe-2"></span>
     </div>
-  {{ end }}
 
-  {{ if .IncludeFooterPauseResume }}
-    <div class="mx-4">
-      <i id="fetching" class="fa-solid fa-hourglass-half fa-2x fa-fw d-none show-when-fetching"></i>
-      <button type="button" id="resume" class="btn btn-primary piaf-btn-resume me-1 hide-when-fetching"><i class="fa-solid fa-2x fa-fw fa-play"></i></button>
-      <button type="button" id="pause" class="btn btn-primary piaf-btn-pause hide-when-fetching"><i class="fa-solid fa-2x fa-fw fa-pause"></i></button>
+    {{/* row 2: the main footer */}}
+    <div class="w-100 d-flex flex-row justify-content-evenly align-items-center bg-primary" style="z-index: 2">
+      {{/* the control link */}}
+      <div class="mx-4">
+        <button class="btn btn-primary" id="control-link" onclick="location.href='/player/control'"><i class="fas fa-fw fa-sliders-h"></i></button>
+      </div>
+
+      {{/* speed control (maybe) */}}
+      {{ if .EnableSpeedControl }}
+        <div class="dropup dropup-center bg-primary">
+          <button id="speed-menu-button" class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Speed
+          </button>
+          <ul class="dropdown-menu">
+            <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.0">1x</button></li>
+            <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.1">1.1x</button></li>
+            <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.25">1.25x</button></li>
+            <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.33">1.33x</button></li>
+            <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.5">1.5x</button></li>
+          </ul>
+        </div>
+      {{ end }}
+
+      {{/* fetching hourglass / pause / resume */}}
+      <div class="mx-4">
+        <i id="fetching" class="fa-solid fa-hourglass-half fa-2x fa-fw d-none show-when-fetching"></i>
+        <button type="button" id="resume" class="btn btn-primary piaf-btn-resume me-1 hide-when-fetching"><i class="fa-solid fa-2x fa-fw fa-play"></i></button>
+        <button type="button" id="pause" class="btn btn-primary piaf-btn-pause hide-when-fetching"><i class="fa-solid fa-2x fa-fw fa-pause"></i></button>
+      </div>
+
+      {{/* volume control */}}
+      <div class="d-flex flex-column align-items-center volume-container">
+        <input type="range" class="form-range volume-slider" id="volume-slider" min="0" max="100">
+        <span id="volume-text">50</span>
+      </div>
     </div>
-  {{ end }}
 
-  <div class="d-flex flex-column align-items-center
-              {{ if .IncludeFooterPauseResume -}}
-                  volume-container
-              {{- else -}}
-                  big-volume-container
-              {{- end -}}
-             ">
-    <input type="range" class="form-range volume-slider" id="volume-slider" min="0" max="100">
-    <span id="volume-text">50</span>
+    {{/* row 3: padding */}}
+    <div class="w-100 footer-padding-bottom bg-primary" style="z-index: 2">&nbsp;</div>
   </div>
+{{ else }}
+  <div class="w-100 fixed-bottom footer d-flex justify-content-evenly align-items-center bg-primary">
+    {{ if .EnableSpeedControl }}
+      <div class="dropup dropup-center bg-primary">
+        <button id="speed-menu-button" class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Speed
+        </button>
+        <ul class="dropdown-menu">
+          <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.0">1x</button></li>
+          <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.1">1.1x</button></li>
+          <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.25">1.25x</button></li>
+          <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.33">1.33x</button></li>
+          <li><button type="button" class="dropdown-item speed-menu-item" data-speed-value="1.5">1.5x</button></li>
+        </ul>
+      </div>
+    {{ end }}
+
+    <div class="d-flex flex-column align-items-center big-volume-container">
+      <input type="range" class="form-range volume-slider" id="volume-slider" min="0" max="100">
+      <span id="volume-text">50</span>
+    </div>
+    <div class="footer-padding-bottom"></div>
+  </div>
+{{ end }}
 </div>
 
 <script>initPiaf();</script>

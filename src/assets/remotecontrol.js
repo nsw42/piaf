@@ -3,6 +3,8 @@
 class RemoteControl {
     // The player interface:
     currentTrackDuration = 0
+
+    // remote-control-specific variables
     currentPosition = 0
 
     fastBackward() {

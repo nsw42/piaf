@@ -6,7 +6,6 @@ const localStoragePositionsKey = 'piaf-local-positions'
 class LocalPlayback {
     // The player interface:
     currentTrackDuration = 0
-    currentPosition = 0
 
     // Other instance variables:
     currentFile = null
@@ -68,8 +67,7 @@ class LocalPlayback {
     pause() {
         if (this.howl) {
             this.howl.pause()
-            this.currentPosition = this.howl.seek()
-            this.savePosition(this.currentFile, this.currentPosition)
+            this.savePosition(this.currentFile, this.howl.seek())
             windowMediaControls.showPlaybackState('paused')
         } else {
             windowMediaControls.showPlaybackState('stopped')
@@ -81,7 +79,7 @@ class LocalPlayback {
     }
 
     seek(newPos) {
-        console.log("LocalPlayback.seek: NYI")
+        this.howl?.seek(newPos)
     }
 
     setSpeed(speed) {
@@ -147,13 +145,15 @@ class LocalPlayback {
         return volume
     }
 
-    updateNowPlaying() {
+    async updateNowPlaying() {
         if (this.howl === null) {
             windowMediaControls.showPlaybackState('stopped')
         } else if (this.fetching) {
             windowMediaControls.showPlaybackState('fetching')
         } else {
             windowMediaControls.showPlaybackState(this.howl.playing() ? 'playing' : 'paused')
+            this.currentTrackDuration = this.howl.duration()
+            windowMediaControls.showTrackPositionAndDuration(this.howl.seek(), this.currentTrackDuration)
         }
     }
 }

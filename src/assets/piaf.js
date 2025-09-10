@@ -9,6 +9,7 @@ let contentsDiv;
 let navbar;
 let controlLinkButton;
 let nowPlayingFile;
+let indexPositionSlider;
 
 let playerLocalPlaback;
 let playerRemoteControl;
@@ -31,6 +32,7 @@ function initPiaf() {
     modeButtonRemoteControl.addEventListener('click', () => { setMode(modeLocalPlayback) })
     modeButtonLocalPlayback.addEventListener('click', () => { setMode(modeRemoteControl) })
 
+    indexPositionSlider = document.getElementById('index-position-slider')
     controlLinkButton = document.getElementById('control-link')
 
     for (const button of document.getElementsByClassName('piaf-play-file')) {
@@ -66,11 +68,22 @@ function setMode(newMode) {
         modeButtonRemoteControl.classList.remove('d-none')
         modeButtonLocalPlayback.classList.add('d-none')
         controlLinkButton?.classList.remove('d-none')
+        indexPositionSlider?.classList.remove('position-relative')  // needs to be display-block for the animation to work
+        indexPositionSlider?.classList.add('animate__animated', 'animate__slideOutDown')
+        indexPositionSlider?.addEventListener('animationend', () => {
+            indexPositionSlider?.classList.add('d-none')
+        }, {'once': true})
     } else {
         currentPlayer = playerLocalPlaback
         modeButtonRemoteControl.classList.add('d-none')
         modeButtonLocalPlayback.classList.remove('d-none')
         controlLinkButton?.classList.add('d-none')
+        indexPositionSlider?.classList.remove('animate__slideOutDown', 'd-none', 'position-relative') // needs to be visible, and display-block for the animation to work
+        indexPositionSlider?.classList.add('animate__animated', 'animate__slideInUp')
+        indexPositionSlider?.addEventListener('animationend', () => {
+            indexPositionSlider?.classList.remove('d-none')  // in case there's a spurious trigger of the slide-out animation end
+            indexPositionSlider?.classList.add('position-relative') // needs to be position-relative for its display to be correct
+        }, {'once': true})
     }
     localStorage.setItem('piaf-current-mode', newMode)
 }

@@ -132,7 +132,7 @@ class LocalPlayback {
     getSavedVolume() {
         let volume = localStorage.getItem(localStorageVolumeKey) // 0 <= volume <= 100
         if (volume === null || isNaN(volume)) {
-            volume = 100
+            volume = 50
         }
 
         volume = Number(volume)
@@ -148,6 +148,7 @@ class LocalPlayback {
     async updateNowPlaying() {
         if (this.howl === null) {
             windowMediaControls.showPlaybackState('stopped')
+            windowMediaControls.showVolume(this.getSavedVolume())
         } else if (this.fetching) {
             windowMediaControls.showPlaybackState('fetching')
         } else {

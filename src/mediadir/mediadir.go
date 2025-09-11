@@ -35,6 +35,7 @@ type MediaFile struct {
 	RelativePath    string // the full path relative to the root media parent directory
 	DurationString  string // extracted from ffmpeg output
 	DurationSeconds int
+	Date            string
 }
 
 func isFile(path string) bool {
@@ -198,7 +199,7 @@ func getOneMediaInfo(file *MediaFile) {
 	output := string(bytes)
 	for line := range strings.SplitSeq(output, "\n") {
 		line = strings.TrimLeft(line, " ")
-		lineWords := strings.Split(line, " ")
+		lineWords := strings.Fields(line)
 		if len(lineWords) > 1 && lineWords[0] == "Duration:" {
 			file.DurationString = strings.TrimSuffix(lineWords[1], ",")
 			file.DurationSeconds = parseDurationString(file.DurationString)
@@ -206,6 +207,12 @@ func getOneMediaInfo(file *MediaFile) {
 			title := strings.TrimLeft(line[6:], " ")
 			title = strings.TrimLeft(title[2:], " ")
 			file.DisplayName = title
+		} else if len(lineWords) > 2 && lineWords[0] == "date" {
+			date := lineWords[2]
+			if t := strings.Index(date, "T"); t > -1 {
+				date = date[:t]
+			}
+			file.Date = date
 		}
 	}
 	cmd.Wait()

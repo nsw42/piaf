@@ -19,6 +19,9 @@ let windowMediaControls;
 let windowTrackDisplay;
 
 function initPiaf() {
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    tooltipTriggerList.forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+
     windowMediaControls = new WindowMediaControls()
     windowTrackDisplay = new WindowTrackDisplay()
 

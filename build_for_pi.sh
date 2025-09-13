@@ -2,7 +2,7 @@
 
 set -e
 
-npm run build_css
+npm run make_css
 
 PLATFORM=aarch64
 cd $(dirname $0)

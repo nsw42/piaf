@@ -9,6 +9,14 @@ $tooltip-color:                   $white;
 
 @import "bootstrap/scss/bootstrap";
 
+// Bootstrap icon sizing
+
+button i.bi {
+    display: flex;
+    align-items: center;
+    height: 1em;
+}
+
 // Piaf-specific styles
 
 // base.templ header
@@ -107,6 +115,7 @@ div.navbar-nav {
 
     button.piaf-play-icon {
         --bs-btn-padding-x: 2px;
+        text-decoration: none;
     }
 
     col:nth-child(1) {

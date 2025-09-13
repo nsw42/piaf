@@ -2,3 +2,4 @@ dist
 node_modules
 src/assets/piaf.css
 src/assets/piaf.css.map
+src/assets/bootstrap-icons

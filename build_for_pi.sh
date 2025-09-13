@@ -7,6 +7,8 @@ usage() {
 
 set -e
 
+npm install
+npm run install_icons
 npm run make_css
 
 if [ -z "$1" ]; then

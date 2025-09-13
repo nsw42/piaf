@@ -31,8 +31,8 @@
           </td>
           <td>
             <button type="button" class="btn btn-link border-0 piaf-play-file pe-1"
-                    {{- if ne .Date "" -}}
-                        data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="{{.Date}}"
+                    {{- if ne .Tooltip "" -}}
+                        data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" data-bs-title="{{.Tooltip}}"
                     {{- end -}}
             >
               {{.DisplayName}}

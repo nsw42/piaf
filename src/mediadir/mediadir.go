@@ -3,6 +3,7 @@ package mediadir
 import (
 	"errors"
 	"fmt"
+	"html"
 	"io"
 	"log"
 	"os"
@@ -30,12 +31,12 @@ type MediaDirectory struct {
 }
 
 type MediaFile struct {
-	DisplayName     string // the leaf, with file extension removed
+	DisplayName     string // the leaf, with file extension removed, or title extracted from metadata
 	Path            string // the full path
 	RelativePath    string // the full path relative to the root media parent directory
 	DurationString  string // extracted from ffmpeg output
 	DurationSeconds int
-	Date            string
+	Tooltip         string
 	InfoLink        string
 }
 
@@ -198,6 +199,8 @@ func getOneMediaInfo(file *MediaFile) {
 		return
 	}
 	output := string(bytes)
+	album := ""
+	date := ""
 	for line := range strings.SplitSeq(output, "\n") {
 		line = strings.TrimLeft(line, " ")
 		lineWords := strings.Fields(line)
@@ -208,17 +211,33 @@ func getOneMediaInfo(file *MediaFile) {
 			title := strings.TrimLeft(line[6:], " ")
 			title = strings.TrimLeft(title[2:], " ")
 			file.DisplayName = title
+		} else if len(lineWords) > 2 && lineWords[0] == "album" {
+			album = strings.TrimLeft(line[6:], " ")
+			album = strings.TrimLeft(album[2:], " ")
 		} else if len(lineWords) > 2 && lineWords[0] == "date" {
-			date := lineWords[2]
+			date = lineWords[2]
 			if t := strings.Index(date, "T"); t > -1 {
 				date = date[:t]
 			}
-			file.Date = date
 		} else if len(lineWords) >= 3 && lineWords[1] == "INFO:" && strings.HasPrefix(lineWords[2], "https://") {
 			file.InfoLink = lineWords[2]
 		}
 	}
+	file.Tooltip = buildTooltip(album, date)
 	cmd.Wait()
+}
+
+func buildTooltip(lines ...string) string {
+	tooltip := ""
+	for _, line := range lines {
+		if line != "" {
+			if tooltip != "" {
+				tooltip += "<br>"
+			}
+			tooltip += html.EscapeString(line)
+		}
+	}
+	return tooltip
 }
 
 func getMediaLengths(directory *MediaDirectory) {

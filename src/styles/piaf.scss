@@ -92,6 +92,12 @@ div.navbar-nav {
     z-index: 1;
 }
 
+@media (max-width: 576px) {
+    #pause:disabled, #resume:disabled {
+        display: none;
+    }
+}
+
 // Index pages
 
 .piaf-media-table {

@@ -73,6 +73,10 @@ div.navbar-nav {
 
 .footer {
     margin-top: 8px;
+
+    button:has(i.bi) {
+        --bs-btn-padding-y: 4px;
+    }
 }
 
 .footer-top-border {

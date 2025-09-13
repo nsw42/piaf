@@ -13,6 +13,9 @@ class LocalPlayback {
     howl = null
 
     playFile(mediaFile) {
+        if (this.howl) {
+            this.howl.stop()
+        }
         const volume = this.getSavedVolume()
         this.howl = new Howl({
             src: ['/mediafile/' + mediaFile],

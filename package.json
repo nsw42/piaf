@@ -4,8 +4,8 @@
   "description": "```sh ./build_for_pi.sh ```",
   "main": "index.js",
   "scripts": {
-    "build_css": "sass src/styles/piaf.scss src/assets/piaf.css --style=compressed --load-path=node_modules --quiet-deps --silence-deprecation=import",
-    "build_css_w": "sass -w src/styles/piaf.scss src/assets/piaf.css --style=compressed --load-path=node_modules --quiet-deps --silence-deprecation=import",
+    "make_css": "sass src/styles/piaf.scss src/assets/piaf.css --style=compressed --load-path=node_modules --quiet-deps --silence-deprecation=import",
+    "make_css_w": "sass -w src/styles/piaf.scss src/assets/piaf.css --style=compressed --load-path=node_modules --quiet-deps --silence-deprecation=import",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

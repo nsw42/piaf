@@ -5,6 +5,7 @@ let currentMode;
 let modeButtonRemoteControl;
 let modeButtonLocalPlayback;
 
+let body;
 let contentsDiv;
 let navbar;
 let controlLinkButton;
@@ -25,6 +26,7 @@ function initPiaf() {
     windowMediaControls = new WindowMediaControls()
     windowTrackDisplay = new WindowTrackDisplay()
 
+    body = document.getElementsByTagName('body')[0]
     contentsDiv = document.getElementById('main-content')
     navbar = document.querySelector('.navbar.fixed-top')
     window.addEventListener('DOMContentLoaded', setContentPadding)
@@ -74,17 +76,18 @@ function setMode(newMode) {
         indexPositionSlider?.classList.remove('position-relative')  // needs to be display-block for the animation to work
         indexPositionSlider?.classList.add('animate__animated', 'animate__slideOutDown')
         indexPositionSlider?.addEventListener('animationend', () => {
-            indexPositionSlider?.classList.add('d-none')
+            body.classList.remove('footer-includes-slider')
         }, {'once': true})
     } else {
         currentPlayer = playerLocalPlaback
         modeButtonRemoteControl.classList.add('d-none')
         modeButtonLocalPlayback.classList.remove('d-none')
         controlLinkButton?.classList.add('d-none')
-        indexPositionSlider?.classList.remove('animate__slideOutDown', 'd-none', 'position-relative') // needs to be visible, and display-block for the animation to work
+        body.classList.add('footer-includes-slider')
+        indexPositionSlider?.classList.remove('animate__slideOutDown', 'position-relative') // needs to be visible, and display-block for the animation to work
         indexPositionSlider?.classList.add('animate__animated', 'animate__slideInUp')
         indexPositionSlider?.addEventListener('animationend', () => {
-            indexPositionSlider?.classList.remove('d-none')  // in case there's a spurious trigger of the slide-out animation end
+            body.classList.add('footer-includes-slider')  // in case of spurious trigger of the other animationend
             indexPositionSlider?.classList.add('position-relative') // needs to be position-relative for its display to be correct
         }, {'once': true})
     }

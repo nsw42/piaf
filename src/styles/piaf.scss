@@ -24,7 +24,26 @@ nav + div {
     display: inline-block;
     white-space: nowrap;
     margin-top: 64px;  // is also updated by JS
-    margin-bottom: 80px;
+}
+
+body:not(.footer-includes-slider) {
+    #main-content {
+        margin-bottom: 60px;
+    }
+
+    #index-position-slider {
+        display: none;
+    }
+}
+
+body.footer-includes-slider {
+    #main-content {
+        margin-bottom: 120px;
+    }
+
+    #index-position-slider {
+        display: flex;
+    }
 }
 
 div.navbar-nav {

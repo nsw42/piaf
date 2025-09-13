@@ -36,6 +36,7 @@ type MediaFile struct {
 	DurationString  string // extracted from ffmpeg output
 	DurationSeconds int
 	Date            string
+	InfoLink        string
 }
 
 func isFile(path string) bool {
@@ -213,6 +214,8 @@ func getOneMediaInfo(file *MediaFile) {
 				date = date[:t]
 			}
 			file.Date = date
+		} else if len(lineWords) >= 3 && lineWords[1] == "INFO:" && strings.HasPrefix(lineWords[2], "https://") {
+			file.InfoLink = lineWords[2]
 		}
 	}
 	cmd.Wait()

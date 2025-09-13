@@ -30,13 +30,16 @@
             <button type="button" class="btn btn-link piaf-play-file piaf-play-icon"><i class="fa-solid fa-play"></i></button>
           </td>
           <td>
-            <button type="button" class="btn btn-link border-0 piaf-play-file"
+            <button type="button" class="btn btn-link border-0 piaf-play-file pe-1"
                     {{- if ne .Date "" -}}
                         data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="{{.Date}}"
                     {{- end -}}
             >
               {{.DisplayName}}
             </button>
+            {{- if ne .InfoLink "" -}}
+              <a class="btn btn-link ps-0" href="{{.InfoLink}}" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+            {{- end -}}
           </td>
           <td>
             {{.DurationString}}

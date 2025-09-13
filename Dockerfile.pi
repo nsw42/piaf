@@ -1,8 +1,8 @@
 ARG CROSS_BUILDER=go-cross-builder-1.24-alpine3.22-aarch64
-FROM --platform=$BUILDPLATFORM ${CROSS_BUILDER} AS crossbuilder
+FROM --platform=$BUILDPLATFORM ${CROSS_BUILDER} AS builder
 ARG TARGETPLATFORM
 
-RUN xx-apk add alsa-lib-dev soundtouch-dev
+RUN xx-apk add g++ alsa-lib-dev soundtouch soundtouch-dev
 
 WORKDIR /go/src
 COPY src /go/src/src
@@ -10,6 +10,7 @@ COPY src /go/src/src
 RUN mkdir -p dist; \
     cd src; \
     go mod tidy; \
-    export CGO_CXXFLAGS="`pkg-config --cflags soundtouch`"; \
-    export CGO_LDFLAGS="`pkg-config --libs soundtouch`"; \
-    go build -o ../dist/piaf -tags release -ldflags "-s -w"
+    XXPKGCONFIG=`xx-info`-pkg-config; \
+    export CGO_CXXFLAGS="`$XXPKGCONFIG --cflags soundtouch`"; \
+    export CGO_LDFLAGS="`$XXPKGCONFIG --libs soundtouch`"; \
+    xx-go build -o ../dist/piaf -tags release -ldflags "-s -w"

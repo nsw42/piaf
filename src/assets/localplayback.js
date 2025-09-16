@@ -60,11 +60,15 @@ class LocalPlayback {
     }
 
     fastBackward() {
-        console.log("LocalPlayback.fastBackward: NYI")
+        if (this.howl !== null) {
+            this.seek(Math.max(this.howl.seek() - 15, 0))
+        }
     }
 
     fastForward() {
-        console.log("LocalPlayback.fastForward: NYI")
+        if (this.howl !== null) {
+            this.seek(Math.min(this.howl.seek() + 15, this.currentTrackDuration - 2))
+        }
     }
 
     pause() {

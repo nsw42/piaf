@@ -54,6 +54,10 @@ body.footer-includes-slider {
     }
 }
 
+body.fetching .hide-when-fetching, body:not(.fetching) .show-when-fetching {
+    display: none !important;
+}
+
 div.navbar-nav {
     display: inline-block;
     white-space: nowrap;

@@ -93,9 +93,11 @@
 
       {{/* fetching hourglass / pause / resume */}}
       <div class="mx-4">
-        <i id="fetching" class="bi bi-hourglass-split fs-1 d-none show-when-fetching"></i>
+        <i id="fetching" class="bi bi-hourglass-split fs-1 show-when-fetching"></i>
+        <button type="button" id="fast-backward" class="btn btn-primary piaf-fast-backward me-1 hide-when-fetching d-none d-lg-inline-block"><i class="bi bi-rewind fs-1"></i></button>
         <button type="button" id="resume" class="btn btn-primary piaf-btn-resume me-1 hide-when-fetching"><i class="bi bi-play fs-1"></i></button>
         <button type="button" id="pause" class="btn btn-primary piaf-btn-pause hide-when-fetching"><i class="bi bi-pause fs-1"></i></button>
+        <button type="button" id="fast-forward" class="btn btn-primary piaf-fast-forward me-1 hide-when-fetching d-none d-lg-inline-block"><i class="bi bi-fast-forward fs-1"></i></button>
       </div>
 
       {{/* volume control */}}

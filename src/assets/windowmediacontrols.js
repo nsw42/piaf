@@ -4,8 +4,9 @@
 class WindowMediaControls {
     constructor() {
 
+        this.bodyElement = document.getElementsByTagName('body')[0]
+
         this.fetchingIndicator = document.getElementById('fetching')
-        this.hideWhenFetching = Array.from(document.getElementsByClassName('hide-when-fetching'))
 
         this.pauseButtons = Array.from(document.getElementsByClassName('piaf-btn-pause'))
         for (const button of this.pauseButtons) {
@@ -17,11 +18,15 @@ class WindowMediaControls {
             button.addEventListener("click", () => { currentPlayer.resume() })
         }
 
-        this.fastBackwardButton = document.getElementById('fast-backward')
-        this.fastBackwardButton?.addEventListener('click', () => { currentPlayer.fastBackward() })
+        this.fastBackwardButtons = document.getElementsByClassName('piaf-fast-backward')
+        for (const button of this.fastBackwardButtons) {
+            button.addEventListener('click', () => { currentPlayer.fastBackward() })
+        }
 
-        this.fastForwardButton = document.getElementById('fast-forward')
-        this.fastForwardButton?.addEventListener('click', () => { currentPlayer.fastForward() })
+        this.fastForwardButtons = document.getElementsByClassName('piaf-fast-forward')
+        for (const button of this.fastForwardButtons) {
+            button.addEventListener('click', () => { currentPlayer.fastForward() })
+        }
 
         this.positionSlider = document.getElementById('position-slider')
         this.positionText = document.getElementById('position-display')
@@ -78,15 +83,15 @@ class WindowMediaControls {
         // allControls.push(controlLinkButton)  TODO
         allControls.push(this.speedMenuButton)
         allControls.push(this.positionSlider)
-        allControls.push(this.fastBackwardButton)
-        allControls.push(this.fastForwardButton)
+        allControls.push(...this.fastBackwardButtons)
+        allControls.push(...this.fastForwardButtons)
         allControls.push(this.volumeSlider)
         allControls = allControls.filter(c => c)
 
         this.disableWhenStopped = allControls
         this.disableWhenInitialising = allControls
 
-        this.disableWhenPaused = this.pauseButtons
+        this.disableWhenPaused = this.pauseButtons.concat(...this.fastBackwardButtons, ...this.fastForwardButtons)
         this.enableWhenPaused = allControls.filter(c => this.disableWhenPaused.indexOf(c) == -1)
 
         this.disableWhenPlaying = this.resumeButtons
@@ -104,15 +109,9 @@ class WindowMediaControls {
 
     showPlaybackState(state) {
         if (state === 'fetching') {
-            this.fetchingIndicator?.classList.remove('d-none')
-            for (const e of this.hideWhenFetching) {
-                e.classList.add('d-none')
-            }
+            this.bodyElement.classList.add('fetching')
         } else {
-            this.fetchingIndicator?.classList.add('d-none')
-            for (const e of this.hideWhenFetching) {
-                e.classList.remove('d-none')
-            }
+            this.bodyElement.classList.remove('fetching')
         }
 
         switch (state) {

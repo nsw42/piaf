@@ -8,19 +8,11 @@ class RemoteControl {
     currentPosition = 0
 
     fastBackward() {
-        let newPos = this.currentPosition - 15
-        if (newPos < 0) {
-            newPos = 0
-        }
-        this.seek(newPos)
+        this.seek(Math.max(this.currentPosition - 15, 0))
     }
 
     fastForward() {
-        let newPos = this.currentPosition  + 15
-        if (newPos > this.currentTrackDuration - 2) {
-            newPos = this.currentTrackDuration - 2
-        }
-        this.seek(newPos)
+        this.seek(Math.min(this.currentPosition + 15, this.currentTrackDuration - 2))
     }
 
     playFile(mediaFile) {

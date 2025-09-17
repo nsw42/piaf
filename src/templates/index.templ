@@ -4,6 +4,7 @@
       <col span="1">
       <col span="1">
       <col span="1">
+      <col span="1">
     </colgroup>
 
     <tbody>
@@ -13,6 +14,7 @@
           <td></td>
           <td><a class="btn btn-link" href=".."><i class="bi bi-arrow-90deg-up"></i></a><a class="btn btn-link" href="..">Up</a></td>
           <td></td>
+          <td></td>
         </tr>
       {{- end -}}
 
@@ -20,6 +22,7 @@
         <tr>
           <td></td>
           <td><a class="btn btn-link" href="/media/{{.RelativePath}}/">{{.Leaf}}</a></td>
+          <td></td>
           <td></td>
         </tr>
       {{- end -}}
@@ -43,6 +46,9 @@
           </td>
           <td>
             {{.DurationString}}
+          </td>
+          <td>
+            <button type="button" class="btn btn-secondary btn-sm d-none d-lg-inline-block piaf-mark-played">Played</button>
           </td>
         </tr>
       {{- end }}

@@ -41,10 +41,14 @@ function initPiaf() {
     controlLinkButton = document.getElementById('control-link')
 
     for (const button of document.getElementsByClassName('piaf-play-file')) {
-        button.addEventListener("click", () => {
-            const tr = button.closest('tr')
-            const mediaFile = tr.getAttribute("data-file")
-            currentPlayer.playFile(mediaFile)
+        button.addEventListener('click', () => {
+            currentPlayer.playFile(getDataFileFromContainingTR(button))
+        })
+    }
+
+    for (const button of document.getElementsByClassName('piaf-mark-played')) {
+        button.addEventListener('click', () => {
+            markFilePlayed(getDataFileFromContainingTR(button))
         })
     }
 
@@ -58,6 +62,17 @@ function initPiaf() {
     setMode(currentMode)
 
     setTimeout(updateNowPlaying, 1)
+}
+
+function getDataFileFromContainingTR(button) {
+    const tr = button.closest('tr')
+    return tr.getAttribute('data-file')
+}
+
+function markFilePlayed(mediaFile) {
+    fetch(`/mediafile/${mediaFile}`, { method: "DELETE" }).then(() => {
+        location.reload()
+    })
 }
 
 function setContentPadding() {

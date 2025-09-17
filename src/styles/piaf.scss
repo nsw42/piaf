@@ -129,7 +129,8 @@ div.navbar-nav {
     col:nth-child(1) {
         width: 24px;
     }
-    col:nth-child(3) {
+
+    col:nth-child(3), col:nth-child(4) {
         width: 0;  // sets to 'as small as possible', not invisible
     }
 }

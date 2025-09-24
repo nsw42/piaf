@@ -121,7 +121,7 @@ func indexPageHandler(c *gin.Context) {
 		return
 	}
 
-	if slices.Contains(c.Request.Header["Cache-Control"], "no-cache") {
+	if mediaDir.HasChanged() || slices.Contains(c.Request.Header["Cache-Control"], "no-cache") {
 		mediaDir.RefreshAndGetMetadata()
 	}
 

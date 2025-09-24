@@ -12,6 +12,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type RootMediaDirectory struct {
@@ -28,6 +29,7 @@ type MediaDirectory struct {
 	RelativePath   string                     // the full path relative to the root media parent directory
 	SubDirectories map[string]*MediaDirectory // indexed by leaf
 	Files          map[string]*MediaFile      // Each entry is a full path
+	ModTime        time.Time
 }
 
 type MediaFile struct {
@@ -54,6 +56,14 @@ func isDir(dir string) bool {
 		return false
 	}
 	return stat.IsDir()
+}
+
+func dirModTime(dir string) time.Time {
+	stat, err := os.Stat(dir)
+	if err != nil {
+		return time.Time{}
+	}
+	return stat.ModTime()
 }
 
 // hh:mm:ss.ms -> int(seconds)
@@ -145,6 +155,10 @@ func readMediaDir(root, parent string) *MediaDirectory {
 	return rtn
 }
 
+func (mediaDir *MediaDirectory) HasChanged() bool {
+	return mediaDir.ModTime.Compare(dirModTime(mediaDir.Path)) < 0
+}
+
 func (mediaDir *MediaDirectory) RefreshAndGetMetadata() {
 	mediaDir.Refresh()
 	go getMediaLengths(mediaDir)
@@ -152,6 +166,8 @@ func (mediaDir *MediaDirectory) RefreshAndGetMetadata() {
 
 func (mediaDir *MediaDirectory) Refresh() {
 	// Note that this doesn't remove the directory from its parent if it's now empty
+	mediaDir.ModTime = dirModTime(mediaDir.Path)
+
 	files, err := os.ReadDir(mediaDir.Path)
 	if err != nil {
 		log.Fatal(err)

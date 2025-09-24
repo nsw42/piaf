@@ -4,6 +4,7 @@
 class WindowMediaControls {
     constructor() {
 
+        this.currentState = 'stopped'
         this.bodyElement = document.getElementsByTagName('body')[0]
 
         this.fetchingIndicator = document.getElementById('fetching')
@@ -15,7 +16,18 @@ class WindowMediaControls {
 
         this.resumeButtons = Array.from(document.getElementsByClassName('piaf-btn-resume'))
         for (const button of this.resumeButtons) {
-            button.addEventListener("click", () => { currentPlayer.resume() })
+            button.addEventListener("click", () => {
+                if (this.currentState === 'stopped' || this.currentState === 'uninitialised') {
+                    const firstFile = this.getFirstFileOnPage()
+                    if (firstFile !== null) {
+                        // Should never be null, because we should have disabled the
+                        // 'resume' button if there are no files
+                        currentPlayer.playFile(firstFile)
+                    }
+                } else {
+                    currentPlayer.resume()
+                }
+            })
         }
 
         this.fastBackwardButtons = document.getElementsByClassName('piaf-fast-backward')
@@ -89,6 +101,7 @@ class WindowMediaControls {
         allControls = allControls.filter(c => c)
 
         this.disableWhenStopped = allControls
+
         this.disableWhenInitialising = allControls
 
         this.disableWhenPaused = this.pauseButtons.concat(...this.fastBackwardButtons, ...this.fastForwardButtons)
@@ -96,6 +109,11 @@ class WindowMediaControls {
 
         this.disableWhenPlaying = this.resumeButtons
         this.enableWhenPlaying = allControls.filter(c => this.disableWhenPlaying.indexOf(c) == -1)
+    }
+
+    getFirstFileOnPage() {
+        const trs = document.getElementsByClassName('piaf-media-files')
+        return (trs.length == 0) ? null : trs[0].getAttribute('data-file')
     }
 
     showPlaybackSpeed(speed) {
@@ -108,6 +126,8 @@ class WindowMediaControls {
     }
 
     showPlaybackState(state) {
+        this.currentState = state;
+
         if (state === 'fetching') {
             this.bodyElement.classList.add('fetching')
         } else {
@@ -132,6 +152,10 @@ class WindowMediaControls {
                         location.reload()
                     } else {
                         disableElements(this.disableWhenStopped)
+                        if (this.getFirstFileOnPage()) {
+                            // it makes sense to enable the 'play' button
+                            enableElements(this.resumeButtons)
+                        }
                     }
                 }
                 break

@@ -37,10 +37,12 @@ type MediaFile struct {
 	DisplayName     string // the leaf, with file extension removed, or title extracted from metadata
 	Path            string // the full path
 	RelativePath    string // the full path relative to the root media parent directory
+	HaveMetadata    bool
 	DurationString  string // extracted from ffmpeg output
 	DurationSeconds int
 	Tooltip         string
 	InfoLink        string
+	ModTime         time.Time
 }
 
 func isFile(path string) bool {
@@ -59,8 +61,8 @@ func isDir(dir string) bool {
 	return stat.IsDir()
 }
 
-func dirModTime(dir string) time.Time {
-	stat, err := os.Stat(dir)
+func modTime(path string) time.Time {
+	stat, err := os.Stat(path)
 	if err != nil {
 		return time.Time{}
 	}
@@ -162,7 +164,7 @@ func (mediaDir *MediaDirectory) HasChanged() bool {
 	if !isDir(mediaDir.Path) {
 		return true // It's changed to nonexistent or not a directory
 	}
-	return mediaDir.ModTime.Compare(dirModTime(mediaDir.Path)) < 0
+	return mediaDir.ModTime.Compare(modTime(mediaDir.Path)) < 0
 }
 
 func (mediaDir *MediaDirectory) RefreshAndGetMetadata() {
@@ -172,7 +174,7 @@ func (mediaDir *MediaDirectory) RefreshAndGetMetadata() {
 
 func (mediaDir *MediaDirectory) Refresh() {
 	// Note that this doesn't remove the directory from its parent if it's now empty
-	mediaDir.ModTime = dirModTime(mediaDir.Path)
+	mediaDir.ModTime = modTime(mediaDir.Path)
 
 	files, err := os.ReadDir(mediaDir.Path)
 	if err != nil {
@@ -195,7 +197,9 @@ func (mediaDir *MediaDirectory) Refresh() {
 				subdirsDeleted = slices.DeleteFunc(subdirsDeleted, func(e string) bool {
 					return e == fileName
 				})
-				subdir.Refresh()
+				if subdir.HasChanged() {
+					subdir.Refresh()
+				}
 			} else {
 				// This is a new directory
 				subdir = readMediaDir(mediaDir.Root, subPath)
@@ -206,12 +210,16 @@ func (mediaDir *MediaDirectory) Refresh() {
 		} else {
 			ext := filepath.Ext(fileName)
 			if ext == ".mp3" || ext == ".m4a" {
-				_, found := mediaDir.Files[fileName]
+				mediaFile, found := mediaDir.Files[fileName]
 				if found {
 					// file already existed
 					filesDeleted = slices.DeleteFunc(filesDeleted, func(e string) bool {
 						return e == fileName
 					})
+					if mediaFile.HasChanged() {
+						mediaFile.ModTime = modTime(mediaFile.Path)
+						mediaFile.HaveMetadata = false
+					}
 				} else {
 					// new file
 					displayName := strings.TrimSuffix(fileName, ext)
@@ -220,6 +228,8 @@ func (mediaDir *MediaDirectory) Refresh() {
 						DisplayName:  displayName,
 						Path:         subPath,
 						RelativePath: relativePath,
+						HaveMetadata: false,
+						ModTime:      modTime(subPath),
 					}
 				}
 			}
@@ -277,6 +287,7 @@ func getOneMediaInfo(file *MediaFile) {
 	}
 	file.Tooltip = buildTooltip(album, date)
 	cmd.Wait()
+	file.HaveMetadata = true
 }
 
 func buildTooltip(lines ...string) string {
@@ -296,7 +307,7 @@ func getMediaLengths(directory *MediaDirectory) {
 	// handle the files in this directory
 	// (so we populate the files in / first)
 	for _, file := range directory.Files {
-		if file.DurationString == "" {
+		if !file.HaveMetadata {
 			getOneMediaInfo(file)
 		}
 	}
@@ -337,4 +348,11 @@ func (media *RootMediaDirectory) MarkFilePlayed(file *MediaFile) error {
 	}
 	delete(mediaDir.Files, pathElts[0])
 	return nil
+}
+
+func (mediaFile *MediaFile) HasChanged() bool {
+	if !isFile(mediaFile.Path) {
+		return true // It's changed to nonexistent or not a file
+	}
+	return mediaFile.ModTime.Compare(modTime(mediaFile.Path)) < 0
 }

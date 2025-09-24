@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -121,9 +120,7 @@ func indexPageHandler(c *gin.Context) {
 		return
 	}
 
-	if mediaDir.HasChanged() || slices.Contains(c.Request.Header["Cache-Control"], "no-cache") {
-		mediaDir.RefreshAndGetMetadata()
-	}
+	mediaDir.RefreshAndGetMetadata() // This ensures our cache is up-to-date
 
 	pageTemplate, err := getTemplate("index.templ")
 	if err != nil || pageTemplate == nil {

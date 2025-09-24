@@ -6,6 +6,7 @@ import (
 	"html"
 	"io"
 	"log"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -140,10 +141,12 @@ func readMediaDir(root, parent string) *MediaDirectory {
 	}
 
 	rtn := &MediaDirectory{
-		Root:         root,
-		Path:         parent, // will be initialised to a full path
-		Leaf:         filepath.Base(parent),
-		RelativePath: relativePath,
+		Root:           root,
+		Path:           parent, // will be initialised to a full path
+		Leaf:           filepath.Base(parent),
+		RelativePath:   relativePath,
+		SubDirectories: make(map[string]*MediaDirectory, 0),
+		Files:          make(map[string]*MediaFile, 0),
 	}
 
 	rtn.Refresh()
@@ -156,6 +159,9 @@ func readMediaDir(root, parent string) *MediaDirectory {
 }
 
 func (mediaDir *MediaDirectory) HasChanged() bool {
+	if !isDir(mediaDir.Path) {
+		return true // It's changed to nonexistent or not a directory
+	}
 	return mediaDir.ModTime.Compare(dirModTime(mediaDir.Path)) < 0
 }
 
@@ -170,31 +176,61 @@ func (mediaDir *MediaDirectory) Refresh() {
 
 	files, err := os.ReadDir(mediaDir.Path)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		mediaDir.SubDirectories = make(map[string]*MediaDirectory)
+		mediaDir.Files = make(map[string]*MediaFile)
+		return
 	}
 
-	mediaDir.SubDirectories = make(map[string]*MediaDirectory, 0)
-	mediaDir.Files = make(map[string]*MediaFile, 0)
+	subdirsDeleted := slices.Collect(maps.Keys(mediaDir.SubDirectories))
+	filesDeleted := slices.Collect(maps.Keys(mediaDir.Files))
+
 	for _, file := range files {
 		fileName := file.Name()
 		subPath := fmt.Sprintf("%s/%s", mediaDir.Path, fileName)
 		if file.IsDir() {
-			subdir := readMediaDir(mediaDir.Root, subPath)
-			if subdir != nil {
-				mediaDir.SubDirectories[file.Name()] = subdir
+			subdir, found := mediaDir.SubDirectories[fileName]
+			if found {
+				// directory already existed
+				subdirsDeleted = slices.DeleteFunc(subdirsDeleted, func(e string) bool {
+					return e == fileName
+				})
+				subdir.Refresh()
+			} else {
+				// This is a new directory
+				subdir = readMediaDir(mediaDir.Root, subPath)
+				if subdir != nil {
+					mediaDir.SubDirectories[file.Name()] = subdir
+				}
 			}
 		} else {
 			ext := filepath.Ext(fileName)
 			if ext == ".mp3" || ext == ".m4a" {
-				displayName := strings.TrimSuffix(fileName, ext)
-				relativePath := filepath.Join(mediaDir.RelativePath, fileName)
-				mediaDir.Files[fileName] = &MediaFile{
-					DisplayName:  displayName,
-					Path:         subPath,
-					RelativePath: relativePath,
+				_, found := mediaDir.Files[fileName]
+				if found {
+					// file already existed
+					filesDeleted = slices.DeleteFunc(filesDeleted, func(e string) bool {
+						return e == fileName
+					})
+				} else {
+					// new file
+					displayName := strings.TrimSuffix(fileName, ext)
+					relativePath := filepath.Join(mediaDir.RelativePath, fileName)
+					mediaDir.Files[fileName] = &MediaFile{
+						DisplayName:  displayName,
+						Path:         subPath,
+						RelativePath: relativePath,
+					}
 				}
 			}
 		}
+	}
+
+	for _, fileName := range subdirsDeleted {
+		delete(mediaDir.SubDirectories, fileName)
+	}
+	for _, fileName := range filesDeleted {
+		delete(mediaDir.Files, fileName)
 	}
 }
 
@@ -260,7 +296,9 @@ func getMediaLengths(directory *MediaDirectory) {
 	// handle the files in this directory
 	// (so we populate the files in / first)
 	for _, file := range directory.Files {
-		getOneMediaInfo(file)
+		if file.DurationString == "" {
+			getOneMediaInfo(file)
+		}
 	}
 
 	// now recurse for subdirectories

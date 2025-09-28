@@ -133,6 +133,10 @@ div.navbar-nav {
     col:nth-child(3), col:nth-child(4) {
         width: 0;  // sets to 'as small as possible', not invisible
     }
+
+    td:nth-child(3) {
+        padding-top: 10px;  // align the text with the text in the button in the 4th column
+    }
 }
 
 /* controls page: 2x2 grid, plus a full-width slider */

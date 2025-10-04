@@ -20,9 +20,9 @@
 
       {{- range .MediaDir.SubDirectories }}
         <tr>
-          <td></td>
+          <td>{{/* play button */}}</td>
           <td><a class="btn btn-link" href="/media/{{.RelativePath}}/">{{.Leaf}}</a></td>
-          <td></td>
+          <td>{{.TotalDurationString}}</td>
           <td></td>
         </tr>
       {{- end -}}

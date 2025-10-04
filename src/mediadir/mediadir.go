@@ -24,13 +24,15 @@ type RootMediaDirectory struct {
 }
 
 type MediaDirectory struct {
-	Root           string
-	Path           string                     // the full path
-	Leaf           string                     // just the final element of the path
-	RelativePath   string                     // the full path relative to the root media parent directory
-	SubDirectories map[string]*MediaDirectory // indexed by leaf
-	Files          map[string]*MediaFile      // Each entry is a full path
-	ModTime        time.Time
+	Root                 string
+	Path                 string                     // the full path
+	Leaf                 string                     // just the final element of the path
+	RelativePath         string                     // the full path relative to the root media parent directory
+	SubDirectories       map[string]*MediaDirectory // indexed by leaf
+	Files                map[string]*MediaFile      // Each entry is a full path
+	TotalDurationString  string
+	TotalDurationSeconds int
+	ModTime              time.Time
 }
 
 type MediaFile struct {
@@ -67,6 +69,28 @@ func modTime(path string) time.Time {
 		return time.Time{}
 	}
 	return stat.ModTime()
+}
+
+func formatDuration(ss int) string {
+	// returns [[nd ]nh ] nm
+	mm := ss / 60
+	ss -= mm * 60
+	if ss >= 30 {
+		mm += 1
+	}
+	hh := mm / 60
+	mm -= hh * 60
+	dd := hh / 24
+	hh -= dd * 24
+	var rtn string
+	if dd > 0 {
+		rtn = fmt.Sprintf("%dd %dh %02dm", dd, hh, mm)
+	} else if hh > 0 {
+		rtn = fmt.Sprintf("%dh %02dm", hh, mm)
+	} else {
+		rtn = fmt.Sprintf("%dm", mm)
+	}
+	return rtn
 }
 
 // hh:mm:ss.ms -> int(seconds)
@@ -269,6 +293,9 @@ func getOneMediaInfo(file *MediaFile) {
 		if len(lineWords) > 1 && lineWords[0] == "Duration:" {
 			file.DurationString = strings.TrimSuffix(lineWords[1], ",")
 			file.DurationSeconds = parseDurationString(file.DurationString)
+			if i := strings.Index(file.DurationString, "."); i > 0 {
+				file.DurationString = file.DurationString[:i]
+			}
 		} else if len(lineWords) > 2 && lineWords[0] == "title" {
 			title := strings.TrimLeft(line[6:], " ")
 			title = strings.TrimLeft(title[2:], " ")
@@ -316,6 +343,16 @@ func getMediaLengths(directory *MediaDirectory) {
 	for _, subdir := range directory.SubDirectories {
 		getMediaLengths(subdir)
 	}
+
+	// Calculate the total duration of the directory contents
+	directory.TotalDurationSeconds = 0
+	for _, subdir := range directory.SubDirectories {
+		directory.TotalDurationSeconds += subdir.TotalDurationSeconds
+	}
+	for _, file := range directory.Files {
+		directory.TotalDurationSeconds += file.DurationSeconds
+	}
+	directory.TotalDurationString = formatDuration(directory.TotalDurationSeconds)
 }
 
 func (media *RootMediaDirectory) MarkFilePlayed(file *MediaFile) error {

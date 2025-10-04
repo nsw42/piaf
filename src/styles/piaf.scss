@@ -135,7 +135,8 @@ div.navbar-nav {
     }
 
     td:nth-child(3) {
-        padding-top: 10px;  // align the text with the text in the button in the 4th column
+        padding-top: 10px;  // align the duration text with the text in the button in the 4th column
+        text-align: right;
     }
 }
 

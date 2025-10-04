@@ -198,6 +198,7 @@ func (mediaDir *MediaDirectory) RefreshAndGetMetadata() {
 
 func (mediaDir *MediaDirectory) Refresh() {
 	// Note that this doesn't remove the directory from its parent if it's now empty
+	// but it does remove children that are now empty
 	mediaDir.ModTime = modTime(mediaDir.Path)
 
 	files, err := os.ReadDir(mediaDir.Path)
@@ -218,11 +219,17 @@ func (mediaDir *MediaDirectory) Refresh() {
 			subdir, found := mediaDir.SubDirectories[fileName]
 			if found {
 				// directory already existed
-				subdirsDeleted = slices.DeleteFunc(subdirsDeleted, func(e string) bool {
-					return e == fileName
-				})
 				if subdir.HasChanged() {
 					subdir.Refresh()
+				}
+				if len(subdir.SubDirectories) > 0 || len(subdir.Files) > 0 {
+					// it already existed, and it's not empty
+					subdirsDeleted = slices.DeleteFunc(subdirsDeleted, func(e string) bool {
+						return e == fileName
+					})
+				} else {
+					// it already existed, but it's now empty - leave it in subdirsDeleted,
+					// because there's no point showing an empty directory
 				}
 			} else {
 				// This is a new directory

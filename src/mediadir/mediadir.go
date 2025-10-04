@@ -296,7 +296,7 @@ func getOneMediaInfo(file *MediaFile) {
 			if i := strings.Index(file.DurationString, "."); i > 0 {
 				file.DurationString = file.DurationString[:i]
 			}
-		} else if len(lineWords) > 2 && lineWords[0] == "title" {
+		} else if len(lineWords) > 2 && lineWords[0] == "title" && file.DisplayName == "" {
 			title := strings.TrimLeft(line[6:], " ")
 			title = strings.TrimLeft(title[2:], " ")
 			file.DisplayName = title

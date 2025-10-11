@@ -118,8 +118,14 @@ class WindowMediaControls {
 
     showPlaybackSpeed(speed) {
         if (this.speedMenuButton) {
+            if (speed instanceof Number || typeof(speed) === 'number') {
+                speed = speed.toString()
+            }
             if (!speed.endsWith('x')) {
                 speed += "x"
+            }
+            if (speed == '1.0x') {
+                speed = '1x'
             }
             this.speedMenuButton.innerHTML = speed
         }

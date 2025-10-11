@@ -1,7 +1,8 @@
 // local playback, fetching files from a piaf system
 
-const localStorageVolumeKey = 'piaf-local-volume'
+const localStoragePlaybackSpeedKey = 'piaf-local-speed'
 const localStoragePositionsKey = 'piaf-local-positions'
+const localStorageVolumeKey = 'piaf-local-volume'
 
 class LocalPlayback {
     // The player interface:
@@ -17,11 +18,13 @@ class LocalPlayback {
             this.howl.stop()
         }
         const volume = this.getSavedVolume()
+        const rate = this.getSavedPlaybackSpeed()
         this.howl = new Howl({
             src: ['/mediafile/' + mediaFile],
             preload: false,
             html5: true,
             volume: volume / 100.0,
+            rate: rate,
             onloaderror: (soundId, errorCode) => {
                 console.log("howlerjs onloaderror: " + errorCode)
             },
@@ -88,7 +91,9 @@ class LocalPlayback {
     }
 
     setSpeed(speed) {
-        console.log("LocalPlayback.setSpeed: NYI")
+        this.howl?.rate(speed)
+        this.savePlaybackSpeed(speed)
+        windowMediaControls.showPlaybackSpeed(speed)
     }
 
     loadSavedPositionMap() {
@@ -132,6 +137,26 @@ class LocalPlayback {
 
     saveVolume(volume) {
         localStorage.setItem(localStorageVolumeKey, volume)
+    }
+
+    getSavedPlaybackSpeed() {
+        let speed = localStorage.getItem(localStoragePlaybackSpeedKey)
+        if (speed === null || isNaN(speed)) {
+            speed = 1.0
+        }
+
+        speed = Number(speed)
+        if (speed < 0.5) {
+            speed = 1.0
+        } else if (speed > 2.0) {
+            speed = 2.0
+        }
+        windowMediaControls.showPlaybackSpeed(speed)
+        return speed
+    }
+
+    savePlaybackSpeed(speed) {
+        localStorage.setItem(localStoragePlaybackSpeedKey, speed)
     }
 
     getSavedVolume() {

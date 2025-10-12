@@ -12,6 +12,7 @@ import (
 type CommandLineArguments struct {
 	MediaParentDirectory string
 	EnableSpeedControl   bool
+	ListenPort           int
 }
 
 var Args *CommandLineArguments
@@ -22,6 +23,7 @@ var MediaPlayer *Player
 func parseArgs() *CommandLineArguments {
 	mediaDir := flag.String("d", "", "play files from DIR")
 	enableSpeed := flag.Bool("s", false, "enable speed controls")
+	listenPort := flag.Int("p", 80, "port to listen on")
 	flag.Parse()
 
 	if *mediaDir == "" {
@@ -32,6 +34,7 @@ func parseArgs() *CommandLineArguments {
 	args := CommandLineArguments{
 		MediaParentDirectory: *mediaDir,
 		EnableSpeedControl:   *enableSpeed,
+		ListenPort:           *listenPort,
 	}
 
 	return &args
@@ -49,7 +52,7 @@ func main() {
 	MediaPlayer = NewPlayer()
 
 	router := ConfigureRouter()
-	router.Run(":80")
+	router.Run(fmt.Sprintf(":%d", Args.ListenPort))
 
 	MediaPlayer.Close()
 }

@@ -1,6 +1,8 @@
 // A class to show the playback status (paused, position, etc), as well as
 // manage the events for the controls
 
+const positionSliderResolution = 1000
+
 class WindowMediaControls {
     constructor() {
 
@@ -48,13 +50,13 @@ class WindowMediaControls {
 
         this.positionSlider?.addEventListener('input', (event) => {
             this.sliderDragActive = true
-            const newPos = currentPlayer?.currentTrackDuration * event.target.value / 100
+            const newPos = currentPlayer?.currentTrackDuration * event.target.value / positionSliderResolution
             this.showTrackPosition(newPos)
         })
 
         this.positionSlider?.addEventListener('change', (event) => {
             this.sliderDragActive = false
-            const newPos = currentPlayer?.currentTrackDuration * event.target.value / 100
+            const newPos = currentPlayer?.currentTrackDuration * event.target.value / positionSliderResolution
             this.showTrackPosition(newPos)
             currentPlayer.seek(newPos)
         })
@@ -193,7 +195,7 @@ class WindowMediaControls {
                 this.positionSlider.value = 0
                 this.positionText.innerHTML = ""
             } else {
-                this.positionSlider.value = position * 100 / duration
+                this.positionSlider.value = position * positionSliderResolution / duration
                 this.showTrackPosition(position)
             }
         }

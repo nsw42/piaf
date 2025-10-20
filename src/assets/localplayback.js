@@ -44,14 +44,14 @@ class LocalPlayback {
                     windowMediaControls.showPlaybackState('paused')
                 }
             },
-            onplay: () => {
-                this.fetching = false
-                windowMediaControls.showPlaybackState('playing')
-                const position = this.getSavedPosition(this.currentFile)
-                if (position !== null && position > 0) {
-                    this.howl.seek(position)
-                }
-            },
+        })
+        this.howl.once('play', () => {
+            this.fetching = false
+            windowMediaControls.showPlaybackState('playing')
+            const position = this.getSavedPosition(this.currentFile)
+            if (position !== null && position > 0) {
+                this.howl.seek(position)
+            }
         })
         this.currentFile = mediaFile
         this.fetching = true;

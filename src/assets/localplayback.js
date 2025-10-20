@@ -18,7 +18,7 @@ class LocalPlayback {
             this.howl.stop()
         }
         const volume = this.getSavedVolume()
-        const rate = this.getSavedPlaybackSpeed()
+        const rate = (document.getElementById('speed-menu-button') === null ? 1.0 : this.getSavedPlaybackSpeed())
         this.howl = new Howl({
             src: ['/mediafile/' + mediaFile],
             preload: false,

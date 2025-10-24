@@ -70,7 +70,7 @@ function getDataFileFromContainingTR(button) {
 }
 
 function markFilePlayed(mediaFile) {
-    fetch(`/mediafile/${mediaFile}`, { method: "DELETE" }).then(() => {
+    fetch(`/mediafile/${encodeURIComponent(mediaFile)}`, { method: "DELETE" }).then(() => {
         location.reload()
     })
 }

@@ -20,7 +20,7 @@ class RemoteControl {
         // If so, resume (if necessary)
         // If not, play it
         // and go to the player control page
-        const apiEndpoint = (mediaFile == nowPlayingFile) ? "/player/resume" : "/player/play/" + mediaFile
+        const apiEndpoint = (mediaFile == nowPlayingFile) ? "/player/resume" : "/player/play/" + encodeURIComponent(mediaFile)
         fetch(apiEndpoint, { method: "PUT" })
         // Don't wait for the fetch to return - that only happens when playback actually starts,
         // which might be a while in the case of having to convert a long .m4a to .wav. This way

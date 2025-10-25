@@ -30,7 +30,7 @@ type TemplatePageArgs struct {
 
 func ConfigureRouter() *gin.Engine {
 	router := gin.Default()
-	router.GET("/", func(c *gin.Context) { c.Redirect(http.StatusMovedPermanently, "/media/") })
+	router.GET("/", rootHandler)
 	router.GET("/media/*path", indexPageHandler)
 	router.Static("/mediafile", Args.MediaParentDirectory+"/Unplayed")
 	router.DELETE("/mediafile/*path", markPlayedHandler)
@@ -108,6 +108,11 @@ func formatPathElts(pathElts []string) [][2]string {
 	}
 
 	return linkPathElts
+}
+
+func rootHandler(c *gin.Context) {
+	c.Header("Cache-Control", "max-age=60, must-revalidate")
+	c.Redirect(http.StatusMovedPermanently, "/media/")
 }
 
 func indexPageHandler(c *gin.Context) {

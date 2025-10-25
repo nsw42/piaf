@@ -18,12 +18,12 @@ class LocalPlayback {
             this.howl.stop()
         }
         const volume = this.getSavedVolume()
-        const rate = (document.getElementById('speed-menu-button') === null ? 1.0 : this.getSavedPlaybackSpeed())
+        const rate = (document.getElementById('speed-menu-button') === null ? 1 : this.getSavedPlaybackSpeed())
         this.howl = new Howl({
             src: ['/mediafile/' + encodeURIComponent(mediaFile)],
             preload: false,
             html5: true,
-            volume: volume / 100.0,
+            volume: volume / 100,
             rate: rate,
             onloaderror: (soundId, errorCode) => {
                 console.log("howlerjs onloaderror: " + errorCode)
@@ -132,7 +132,7 @@ class LocalPlayback {
     setVolume(volume) {
         // 0 <= volume <= 100
         this.saveVolume(volume)
-        this.howl?.volume(volume / 100.0)
+        this.howl?.volume(volume / 100)
     }
 
     saveVolume(volume) {
@@ -141,15 +141,15 @@ class LocalPlayback {
 
     getSavedPlaybackSpeed() {
         let speed = localStorage.getItem(localStoragePlaybackSpeedKey)
-        if (speed === null || isNaN(speed)) {
-            speed = 1.0
+        if (speed === null || Number.isNaN(speed)) {
+            speed = 1
         }
 
         speed = Number(speed)
         if (speed < 0.5) {
-            speed = 1.0
-        } else if (speed > 2.0) {
-            speed = 2.0
+            speed = 1
+        } else if (speed > 2) {
+            speed = 2
         }
         windowMediaControls.showPlaybackSpeed(speed)
         return speed
@@ -161,7 +161,7 @@ class LocalPlayback {
 
     getSavedVolume() {
         let volume = localStorage.getItem(localStorageVolumeKey) // 0 <= volume <= 100
-        if (volume === null || isNaN(volume)) {
+        if (volume === null || Number.isNaN(volume)) {
             volume = 50
         }
 

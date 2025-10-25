@@ -5,7 +5,7 @@ class WindowTrackDisplay {
 
     showActiveTrack(nowPlayingFile) {
         for (const tr of this.trMediaFiles) {
-            const rowPath = tr.getAttribute('data-file')
+            const rowPath = tr.dataset.file
             if (rowPath === nowPlayingFile) {
                 tr.classList.add('table-info')
             } else {

@@ -21,7 +21,9 @@ let windowTrackDisplay;
 
 function initPiaf() {
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-    tooltipTriggerList.forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    for (const tooltipTriggerEl of tooltipTriggerList) {
+        new bootstrap.Tooltip(tooltipTriggerEl)  // NOSONARQA: S1848 false-positive
+    }
 
     windowMediaControls = new WindowMediaControls()
     windowTrackDisplay = new WindowTrackDisplay()
@@ -66,7 +68,7 @@ function initPiaf() {
 
 function getDataFileFromContainingTR(button) {
     const tr = button.closest('tr')
-    return tr.getAttribute('data-file')
+    return tr.dataset.file
 }
 
 function markFilePlayed(mediaFile) {

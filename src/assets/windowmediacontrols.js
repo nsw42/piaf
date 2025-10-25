@@ -76,7 +76,7 @@ class WindowMediaControls {
         this.speedMenuButton = document.getElementById('speed-menu-button')
         for (const element of document.getElementsByClassName('speed-menu-item')) {
             element.addEventListener("click", () => {
-                currentPlayer.setSpeed(element.getAttribute('data-speed-value'))
+                currentPlayer.setSpeed(element.dataset.speedValue)
             })
         }
 
@@ -95,27 +95,27 @@ class WindowMediaControls {
 
         let allControls = this.pauseButtons.concat(this.resumeButtons)
         // allControls.push(controlLinkButton)  TODO
-        allControls.push(this.speedMenuButton)
-        allControls.push(this.positionSlider)
-        allControls.push(...this.fastBackwardButtons)
-        allControls.push(...this.fastForwardButtons)
-        allControls.push(this.volumeSlider)
-        allControls = allControls.filter(c => c)
+        allControls.push(this.speedMenuButton,
+                         this.positionSlider,
+                         ...this.fastBackwardButtons,
+                         ...this.fastForwardButtons,
+                         this.volumeSlider)
+        allControls = allControls.filter(Boolean)
 
         this.disableWhenStopped = allControls
 
         this.disableWhenInitialising = allControls
 
         this.disableWhenPaused = this.pauseButtons.concat(...this.fastBackwardButtons, ...this.fastForwardButtons)
-        this.enableWhenPaused = allControls.filter(c => this.disableWhenPaused.indexOf(c) == -1)
+        this.enableWhenPaused = allControls.filter(c => !this.disableWhenPaused.includes(c))
 
         this.disableWhenPlaying = this.resumeButtons
-        this.enableWhenPlaying = allControls.filter(c => this.disableWhenPlaying.indexOf(c) == -1)
+        this.enableWhenPlaying = allControls.filter(c => !this.disableWhenPlaying.includes(c))
     }
 
     getFirstFileOnPage() {
         const trs = document.getElementsByClassName('piaf-media-files')
-        return (trs.length == 0) ? null : trs[0].getAttribute('data-file')
+        return (trs.length == 0) ? null : trs[0].dataset.file
     }
 
     showPlaybackSpeed(speed) {

@@ -1,9 +1,14 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
+	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -42,6 +47,7 @@ func ConfigureRouter() *gin.Engine {
 	router.GET("/player/status", getPlayerStatusHandler)
 	router.PUT("/player/speed", speedHandler)
 	router.PUT("/player/volume", volumeHandler)
+	router.POST("/phone", sendToPhoneHandler)
 	configureAssetsForRouter(router, "/assets")
 	return router
 }
@@ -85,6 +91,9 @@ func findMediaDir(pathElts []string) *mediadir.MediaDirectory {
 
 func findMediaFile(pathElts []string) *mediadir.MediaFile {
 	mediaDir := findMediaDir(pathElts[:len(pathElts)-1])
+	if mediaDir == nil {
+		return nil
+	}
 	return mediaDir.Files[pathElts[len(pathElts)-1]]
 }
 
@@ -320,5 +329,72 @@ func volumeHandler(c *gin.Context) {
 		return
 	}
 	MediaPlayer.SetVolume(vol)
+	c.Status(http.StatusNoContent)
+}
+
+func newFileUploadRequest(url string, file *mediadir.MediaFile, filename string) (*http.Request, error) {
+	// Read the file to send
+	handle, err := os.Open(file.Path)
+	if err != nil {
+		return nil, err
+	}
+	contents, err := io.ReadAll(handle)
+	if err != nil {
+		return nil, err
+	}
+	handle.Close()
+
+	// Prepare the request body
+	body := new(bytes.Buffer)
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile("files[]", filename)
+	if err != nil {
+		return nil, err
+	}
+	part.Write(contents)
+	writer.WriteField("path", "/")
+	writer.Close()
+
+	// Construct the request
+	request, err := http.NewRequest("POST", url, body)
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Add("Content-Type", writer.FormDataContentType())
+	return request, nil
+}
+
+func sendToPhoneHandler(c *gin.Context) {
+	var requestParams struct {
+		File         string `json:"file"`
+		PhoneAddress string `json:"phone"`
+	}
+	if err := c.ShouldBindJSON(&requestParams); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	pathElts := splitPath(requestParams.File)
+	file := findMediaFile(pathElts)
+	if file == nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	url := fmt.Sprintf("http://%s/upload", requestParams.PhoneAddress)
+	request, err := newFileUploadRequest(url, file, pathElts[len(pathElts)-1])
+	if err != nil {
+		log.Println(err)
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		log.Println(err)
+		c.Status(http.StatusBadGateway)
+		return
+	}
+	defer response.Body.Close()
+
 	c.Status(http.StatusNoContent)
 }

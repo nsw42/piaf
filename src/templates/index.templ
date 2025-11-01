@@ -5,6 +5,7 @@
       <col span="1">
       <col span="1">
       <col span="1">
+      <col span="1">
     </colgroup>
 
     <tbody>
@@ -23,6 +24,7 @@
           <td>{{/* play button */}}</td>
           <td><a class="btn btn-link" href="/media/{{.RelativePath}}/">{{.Leaf}}</a></td>
           <td>{{.TotalDurationString}}</td>
+          <td></td>
           <td></td>
         </tr>
       {{- end -}}
@@ -50,10 +52,53 @@
           <td>
             <button type="button" class="btn btn-secondary btn-sm d-none d-lg-inline-block piaf-mark-played">Played</button>
           </td>
+          <td class="dropdown">
+            <i class="bi bi-three-dots-vertical" data-bs-toggle="dropdown" aria-expanded="false"></i>
+            <ul class="dropdown-menu">
+              <li>
+                <span class="dropdown-item">
+                  <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#send-to-phone-modal">Send to Phone</button>
+                </span>
+              </li>
+            </ul>
+          </td>
         </tr>
       {{- end }}
     </tbody>
   </table>
 {{end}}
+
+<div id="send-to-phone-modal" class="modal send-to-phone-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="send-to-phone-form" class="needs-validation" novalidate>
+                <div class="modal-header">
+                    <h5 class="modal-title">Send to Phone</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="file-to-upload" name="file-to-upload">
+                    <label for="phone-ip-address" class="form-label">Phone IP address</label>
+                    <input type="text" class="form-control" name="phone-ip-address" id="phone-ip-address" placeholder="nnn.nnn.nnn.nnn" required>
+                    <div class="invalid-feedback">
+                        Enter an IP address
+                    </div>
+                    <div id="send-to-phone-failed" class="text-danger">
+                        Failed to send to phone
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary bg-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary bg-primary" id="send-to-phone-submit">
+                        <span class="spinner-border spinner-border-sm" aria-hidden="true" id="send-to-phone-spinner"></span>
+                        Upload
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="/assets/sendtophone.js"></script>
 
 {{template "base" .}}

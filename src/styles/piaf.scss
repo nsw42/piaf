@@ -130,13 +130,56 @@ div.navbar-nav {
         width: 24px;
     }
 
-    col:nth-child(3), col:nth-child(4) {
+    col:nth-child(3), col:nth-child(4), col:nth-child(5) {
         width: 0;  // sets to 'as small as possible', not invisible
     }
 
     td:nth-child(3) {
         padding-top: 10px;  // align the duration text with the text in the button in the 4th column
         text-align: right;
+        white-space: nowrap;
+    }
+
+    td {
+        vertical-align: middle;
+    }
+}
+
+// Send to phone modal
+// Three states:
+//   initial (not sending, not failed)
+//   sending
+//   send failed
+
+#send-to-phone-modal {
+    &:not(.sending):not(.send-failed) {
+        #send-to-phone-failed {
+            display: none;
+        }
+        #send-to-phone-spinner {
+            display: none;
+        }
+    }
+
+    &.sending {
+        #send-to-phone-failed {
+            display: none;
+        }
+        #send-to-phone-submit {
+            color: var(--bs-btn-disabled-color);
+            background-color: var(--bs-btn-disabled-bg) !important;
+            opacity: var(--bs-btn-disabled-opacity);
+            border-color: var(--bs-btn-disabled-border-color);
+        }
+    }
+
+    &.send-failed {
+        #send-to-phone-failed {
+            display: unset;
+        }
+        #send-to-phone-spinner {
+            display: none;
+        }
     }
 }
 

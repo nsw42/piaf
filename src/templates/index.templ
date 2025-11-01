@@ -13,7 +13,7 @@
       {{- if ne .RequestPath "/" -}}
         <tr>
           <td></td>
-          <td><a class="btn btn-link" href=".."><i class="bi bi-arrow-90deg-up"></i></a><a class="btn btn-link" href="..">Up</a></td>
+          <td><a class="btn btn-link" href=".."><i class="bi bi-arrow-90deg-up"></i></a><a class="btn btn-link text-start" href="..">Up</a></td>
           <td></td>
           <td></td>
         </tr>
@@ -22,7 +22,7 @@
       {{- range .MediaDir.SubDirectories }}
         <tr>
           <td>{{/* play button */}}</td>
-          <td><a class="btn btn-link" href="/media/{{.RelativePath}}/">{{.Leaf}}</a></td>
+          <td><a class="btn btn-link text-start" href="/media/{{.RelativePath}}/">{{.Leaf}}</a></td>
           <td>{{.TotalDurationString}}</td>
           <td></td>
           <td></td>
@@ -35,7 +35,7 @@
             <button type="button" class="btn btn-link piaf-play-file piaf-play-icon"><i class="bi bi-play"></i></button>
           </td>
           <td>
-            <button type="button" class="btn btn-link border-0 piaf-play-file pe-1"
+            <button type="button" class="btn btn-link border-0 piaf-play-file pe-1 text-start"
                     {{- if ne .Tooltip "" -}}
                         data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" data-bs-title="{{.Tooltip}}"
                     {{- end -}}

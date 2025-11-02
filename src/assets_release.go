@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,6 +21,13 @@ var templates embed.FS
 var templateCache = make(map[string]*template.Template, 0)
 
 func configureAssetsForRouter(router *gin.Engine, path string) {
+	router.Use(func(c *gin.Context) {
+		// Set a cache timeout (1hr)
+		if strings.HasPrefix(c.Request.URL.Path, path) {
+			c.Header("Cache-Control", "max-age=3600")
+		}
+		c.Next()
+	})
 	dir, _ := fs.Sub(assets, "assets")
 	router.StaticFS(path, http.FS(dir))
 }

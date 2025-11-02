@@ -154,12 +154,26 @@ div.navbar-nav {
         text-decoration: none;
     }
 
+    // Columns:
+    // 1=the play column
+    // 2=track title
+    // 3=duration
+    // 4='played' button
+    // 5=three-dots menu
     col:nth-child(1) {
         width: 24px;
     }
 
     col:nth-child(3), col:nth-child(4), col:nth-child(5) {
         width: 0;  // sets to 'as small as possible', not invisible
+    }
+
+    // track title
+    td:nth-child(2) button {
+        max-width: 60vw;
+        text-overflow: ellipsis;
+        text-wrap-mode: nowrap;
+        overflow: hidden;
     }
 
     td:nth-child(3) {

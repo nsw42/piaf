@@ -58,6 +58,10 @@ body.fetching .hide-when-fetching, body:not(.fetching) .show-when-fetching {
     display: none !important;
 }
 
+body.mode-remote-control .hide-when-remote-control, body.mode-local-playback .hide-when-local-playback {
+    display: none !important;
+}
+
 div.navbar-nav {
     display: inline-block;
     white-space: nowrap;
@@ -108,9 +112,33 @@ div.navbar-nav {
     z-index: 1;
 }
 
+@media (max-width: 768px) {
+    body.mode-local-playback .volume-container  {
+        display: none !important;
+    }
+
+    body.mode-remote-control {
+        #fast-backward, #fast-forward {
+            display: none !important;
+        }
+    }
+}
+
 @media (max-width: 576px) {
-    #pause:disabled, #resume:disabled {
-        display: none;
+    #pause:disabled, #resume:disabled, #fast-backward:disabled, #fast-forward:disabled {
+        display: none !important;
+    }
+}
+
+@media (max-width: 450px) {
+    .volume-container {
+        display: none !important;
+    }
+}
+
+@media (max-width: 360px) {
+    #fast-backward, #fast-forward {
+        display: none !important;
     }
 }
 

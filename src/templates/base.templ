@@ -43,8 +43,8 @@
       {{end}}
     </div>
     <div class="navbar-brand border border-0 piaf-nav-fixed-size">
-        <button type="button" id="mode-indicator-remote" class="btn btn-primary"><i class="bi bi-volume-up fs-2"></i></button>
-        <button type="button" id="mode-indicator-local" class="btn btn-primary d-none"><i class="bi bi-headphones fs-2"></i></i>
+        <button type="button" id="mode-indicator-remote" class="btn btn-primary hide-when-local-playback"><i class="bi bi-volume-up fs-2"></i></button>
+        <button type="button" id="mode-indicator-local" class="btn btn-primary hide-when-remote-control"><i class="bi bi-headphones fs-2"></i></i>
     </div>
   </div>
 </nav>
@@ -71,7 +71,7 @@
     {{/* row 2: the main footer */}}
     <div class="w-100 d-flex flex-row justify-content-evenly align-items-center bg-primary" style="z-index: 2">
       {{/* the control link */}}
-      <div class="mx-4">
+      <div class="mx-4 hide-when-local-playback">
         <button class="btn btn-primary" id="control-link" onclick="location.href='/player/control'"><i class="bi bi-sliders fs-3"></i></button>
       </div>
 
@@ -94,10 +94,10 @@
       {{/* fetching hourglass / pause / resume */}}
       <div class="mx-4">
         <i id="fetching" class="bi bi-hourglass-split fs-1 show-when-fetching"></i>
-        <button type="button" id="fast-backward" class="btn btn-primary piaf-fast-backward me-1 hide-when-fetching d-none d-lg-inline-block"><i class="bi bi-rewind fs-1"></i></button>
+        <button type="button" id="fast-backward" class="btn btn-primary piaf-fast-backward me-1 hide-when-fetching"><i class="bi bi-rewind fs-1"></i></button>
         <button type="button" id="resume" class="btn btn-primary piaf-btn-resume me-1 hide-when-fetching"><i class="bi bi-play fs-1"></i></button>
         <button type="button" id="pause" class="btn btn-primary piaf-btn-pause hide-when-fetching"><i class="bi bi-pause fs-1"></i></button>
-        <button type="button" id="fast-forward" class="btn btn-primary piaf-fast-forward me-1 hide-when-fetching d-none d-lg-inline-block"><i class="bi bi-fast-forward fs-1"></i></button>
+        <button type="button" id="fast-forward" class="btn btn-primary piaf-fast-forward me-1 hide-when-fetching"><i class="bi bi-fast-forward fs-1"></i></button>
       </div>
 
       {{/* volume control */}}

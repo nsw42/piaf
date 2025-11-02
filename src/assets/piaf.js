@@ -8,7 +8,6 @@ let modeButtonLocalPlayback;
 let body;
 let contentsDiv;
 let navbar;
-let controlLinkButton;
 let nowPlayingFile;
 let indexPositionSlider;
 
@@ -40,7 +39,6 @@ function initPiaf() {
     modeButtonLocalPlayback.addEventListener('click', () => { setMode(modeRemoteControl) })
 
     indexPositionSlider = document.getElementById('index-position-slider')
-    controlLinkButton = document.getElementById('control-link')
 
     for (const button of document.getElementsByClassName('piaf-play-file')) {
         button.addEventListener('click', () => {
@@ -87,9 +85,8 @@ function setMode(newMode) {
     currentMode = newMode
     if (currentMode === modeRemoteControl) {
         currentPlayer = playerRemoteControl
-        modeButtonRemoteControl.classList.remove('d-none')
-        modeButtonLocalPlayback.classList.add('d-none')
-        controlLinkButton?.classList.remove('d-none')
+        body.classList.add('mode-remote-control')
+        body.classList.remove('mode-local-playback')
         indexPositionSlider?.classList.remove('position-relative')  // needs to be display-block for the animation to work
         indexPositionSlider?.classList.add('animate__animated', 'animate__slideOutDown')
         indexPositionSlider?.addEventListener('animationend', () => {
@@ -97,9 +94,8 @@ function setMode(newMode) {
         }, {'once': true})
     } else {
         currentPlayer = playerLocalPlaback
-        modeButtonRemoteControl.classList.add('d-none')
-        modeButtonLocalPlayback.classList.remove('d-none')
-        controlLinkButton?.classList.add('d-none')
+        body.classList.add('mode-local-playback')
+        body.classList.remove('mode-remote-control')
         body.classList.add('footer-includes-slider')
         indexPositionSlider?.classList.remove('animate__slideOutDown', 'position-relative') // needs to be visible, and display-block for the animation to work
         indexPositionSlider?.classList.add('animate__animated', 'animate__slideInUp')

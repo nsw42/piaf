@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func isFile(path string) bool {
+func IsFile(path string) bool {
 	stat, err := os.Stat(path)
 	if err != nil {
 		return false
@@ -17,7 +17,7 @@ func isFile(path string) bool {
 	return !stat.IsDir()
 }
 
-func isDir(dir string) bool {
+func IsDir(dir string) bool {
 	stat, err := os.Stat(dir)
 	if err != nil {
 		return false

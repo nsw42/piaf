@@ -27,8 +27,13 @@ func parseArgs() *CommandLineArguments {
 	flag.Parse()
 
 	if *mediaDir == "" {
-		fmt.Println("The -d command-line parameter is mandatory")
-		os.Exit(1)
+		// Are there Unplayed and Played directories in the current directory?
+		if mediadir.IsDir("./Unplayed") && mediadir.IsDir("./Played") {
+			*mediaDir = "."
+		} else {
+			fmt.Println("The -d command-line parameter is mandatory")
+			os.Exit(1)
+		}
 	}
 
 	args := CommandLineArguments{

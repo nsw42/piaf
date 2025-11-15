@@ -23,13 +23,13 @@ func ReadMediaDir(root string) (*RootMediaDirectory, error) {
 		PlayedMediaDirectory:   filepath.Join(root, "Played"),
 	}
 
-	if !isDir(media.RootMediaDirectory) {
+	if !IsDir(media.RootMediaDirectory) {
 		return nil, fmt.Errorf("root media directory '%s' does not exist", root)
 	}
-	if !isDir(media.UnplayedMediaDirectory) {
+	if !IsDir(media.UnplayedMediaDirectory) {
 		return nil, fmt.Errorf("unplayed directory '%s' does not exist", root)
 	}
-	if !isDir(media.PlayedMediaDirectory) {
+	if !IsDir(media.PlayedMediaDirectory) {
 		return nil, fmt.Errorf("played directory '%s' does not exist", root)
 	}
 
@@ -40,7 +40,7 @@ func ReadMediaDir(root string) (*RootMediaDirectory, error) {
 }
 
 func (root *RootMediaDirectory) MarkFilePlayed(file *MediaFile) error {
-	if !isFile(file.Path) {
+	if !IsFile(file.Path) {
 		return errors.New("file not found")
 	}
 	dest := filepath.Join(root.PlayedMediaDirectory, file.RelativePath)

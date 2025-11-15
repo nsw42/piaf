@@ -35,7 +35,7 @@ func buildTooltip(lines ...string) string {
 }
 
 func (mediaFile *MediaFile) HasChanged() bool {
-	if !isFile(mediaFile.Path) {
+	if !IsFile(mediaFile.Path) {
 		return true // It's changed to nonexistent or not a file
 	}
 	return mediaFile.ModTime.Compare(modTime(mediaFile.Path)) < 0

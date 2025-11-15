@@ -48,7 +48,7 @@ func readMediaDir(root, parent string) *MediaDirectory {
 }
 
 func (mediaDir *MediaDirectory) HasChanged() bool {
-	if !isDir(mediaDir.Path) {
+	if !IsDir(mediaDir.Path) {
 		return true // It's changed to nonexistent or not a directory
 	}
 	return mediaDir.ModTime.Compare(modTime(mediaDir.Path)) < 0

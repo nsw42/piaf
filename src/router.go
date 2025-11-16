@@ -347,7 +347,8 @@ func newFileUploadRequest(url string, file *mediadir.MediaFile, filename string)
 	// Prepare the request body
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
-	part, err := writer.CreateFormFile("files[]", filename)
+	quotedFilename := strings.ReplaceAll(filename, "\"", "%22")
+	part, err := writer.CreateFormFile("files[]", quotedFilename)
 	if err != nil {
 		return nil, err
 	}

@@ -57,9 +57,16 @@
             <ul class="dropdown-menu">
               <li>
                 <span class="dropdown-item">
-                  <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#send-to-phone-modal">Send to Phone</button>
+                  <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#send-to-phone-modal">Send to phone...</button>
                 </span>
               </li>
+              {{- range $.PhoneAddressHistory }}
+              <li>
+                <span class="dropdown-item">
+                  <button type="button" class="btn send-to-phone-address-menu-item" data-phone-address="{{.}}">Send to {{.}}</button>
+                </span>
+              </li>
+              {{- end -}}
             </ul>
           </td>
         </tr>

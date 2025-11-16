@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -9,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -31,6 +33,26 @@ type TemplatePageArgs struct {
 	RequestPathElts          [][2]string
 	EnableSpeedControl       bool
 	IncludeFooterPauseResume bool
+}
+
+var phoneAddressHistoryFilePath string
+var phoneAddressHistory = make([]string, 0)
+
+func init() {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Println("Unable to find user home directory: cannot load history of upload addresses")
+		return
+	}
+	phoneAddressHistoryFilePath = fmt.Sprintf("%s/.piafrc", home)
+	historyFile, err := os.Open(phoneAddressHistoryFilePath)
+	if err != nil {
+		return
+	}
+	defer historyFile.Close()
+
+	contents, _ := io.ReadAll(historyFile)
+	json.Unmarshal(contents, &phoneAddressHistory)
 }
 
 func ConfigureRouter() *gin.Engine {
@@ -147,7 +169,8 @@ func indexPageHandler(c *gin.Context) {
 
 	pageArgs := struct {
 		TemplatePageArgs
-		MediaDir *mediadir.MediaDirectory
+		MediaDir            *mediadir.MediaDirectory
+		PhoneAddressHistory []string
 	}{
 		TemplatePageArgs: TemplatePageArgs{
 			RequestPath:              path,
@@ -155,7 +178,8 @@ func indexPageHandler(c *gin.Context) {
 			EnableSpeedControl:       Args.EnableSpeedControl,
 			IncludeFooterPauseResume: true,
 		},
-		MediaDir: mediaDir,
+		MediaDir:            mediaDir,
+		PhoneAddressHistory: phoneAddressHistory,
 	}
 	err = pageTemplate.Execute(c.Writer, pageArgs)
 	if err != nil {
@@ -381,6 +405,8 @@ func sendToPhoneHandler(c *gin.Context) {
 		return
 	}
 
+	updatePhoneAddressHistory(requestParams.PhoneAddress)
+
 	url := fmt.Sprintf("http://%s/upload", requestParams.PhoneAddress)
 	request, err := newFileUploadRequest(url, file, pathElts[len(pathElts)-1])
 	if err != nil {
@@ -398,4 +424,24 @@ func sendToPhoneHandler(c *gin.Context) {
 	defer response.Body.Close()
 
 	c.Status(http.StatusNoContent)
+}
+
+func updatePhoneAddressHistory(phoneAddress string) {
+	var newHistory = []string{phoneAddress}
+	for _, address := range phoneAddressHistory {
+		if !slices.Contains(newHistory, address) {
+			newHistory = append(newHistory, address)
+			if len(newHistory) == 5 {
+				break
+			}
+		}
+	}
+	phoneAddressHistory = newHistory
+
+	if phoneAddressHistoryFilePath != "" {
+		marshalled, err := json.MarshalIndent(phoneAddressHistory, "", "  ")
+		if err == nil {
+			os.WriteFile(phoneAddressHistoryFilePath, marshalled, 0644)
+		}
+	}
 }

@@ -1,79 +1,75 @@
 {{define "content"}}
-  <table class="piaf-media-table table table-striped">
-    <colgroup>
-      <col span="1">
-      <col span="1">
-      <col span="1">
-      <col span="1">
-      <col span="1">
-    </colgroup>
-
-    <tbody>
-      {{/* directories first */}}
-      {{- if ne .RequestPath "/" -}}
-        <tr>
-          <td></td>
-          <td><a class="btn btn-link" href=".."><i class="bi bi-arrow-90deg-up"></i></a><a class="btn btn-link text-start" href="..">Up</a></td>
-          <td></td>
-          <td></td>
-        </tr>
-      {{- end -}}
-
-      {{- range .MediaDir.SubDirectories }}
-        <tr>
-          <td>{{/* play button */}}</td>
-          <td><a class="btn btn-link text-start" href="/media/{{.RelativePath}}/">{{.Leaf}}</a></td>
-          <td>{{.TotalDurationString}}</td>
-          <td></td>
-          <td></td>
-        </tr>
-      {{- end -}}
-
-      {{- range .MediaDir.Files }}
-        <tr class="piaf-media-files" data-file="{{.RelativePath}}">
-          <td>
-            <button type="button" class="btn btn-link piaf-play-file piaf-play-icon"><i class="bi bi-play"></i></button>
-          </td>
-          <td>
-            <button type="button" class="btn btn-link border-0 piaf-play-file pe-1 text-start"
-                    {{- if ne .Tooltip "" -}}
-                        data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" data-bs-title="{{.Tooltip}}"
-                    {{- end -}}
-            >
-              {{.DisplayName}}
-            </button>
-            {{- if ne .InfoLink "" -}}
-              <a class="btn btn-link ps-0" href="{{.InfoLink}}" target="_blank"><i class="bi bi-arrow-up-right-square"></i></a>
+<table class="piaf-media-table table table-striped">
+  <colgroup>
+    <col span="1">
+    <col span="1">
+    <col span="1">
+    <col span="1">
+    <col span="1">
+  </colgroup>
+  <tbody>
+    {{/* directories first */}}
+    {{- if ne .RequestPath "/" -}}
+      <tr>
+        <td></td>
+        <td><a class="btn btn-link" href=".."><i class="bi bi-arrow-90deg-up"></i></a><a class="btn btn-link text-start" href="..">Up</a></td>
+        <td></td>
+        <td></td>
+      </tr>
+    {{- end -}}
+    {{- range .MediaDir.SubDirectories }}
+      <tr>
+        <td>{{/* play button */}}</td>
+        <td><a class="btn btn-link text-start" href="/media/{{.RelativePath}}/">{{.Leaf}}</a></td>
+        <td>{{.TotalDurationString}}</td>
+        <td></td>
+        <td></td>
+      </tr>
+    {{- end -}}
+    {{- range .MediaDir.Files }}
+      <tr class="piaf-media-files" data-file="{{.RelativePath}}">
+        <td>
+          <button type="button" class="btn btn-link piaf-play-file piaf-play-icon"><i class="bi bi-play"></i></button>
+        </td>
+        <td>
+          <button type="button" class="btn btn-link border-0 piaf-play-file pe-1 text-start"
+                  {{- if ne .Tooltip "" -}}
+                      data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" data-bs-title="{{.Tooltip}}"
+                  {{- end -}}
+          >
+            {{.DisplayName}}
+          </button>
+          {{- if ne .InfoLink "" -}}
+            <a class="btn btn-link ps-0" href="{{.InfoLink}}" target="_blank"><i class="bi bi-arrow-up-right-square"></i></a>
+          {{- end -}}
+        </td>
+        <td>
+          {{.DurationString}}
+        </td>
+        <td>
+          <button type="button" class="btn btn-secondary btn-sm d-none d-lg-inline-block piaf-mark-played">Played</button>
+        </td>
+        <td class="dropdown">
+          <i class="bi bi-three-dots-vertical" data-bs-toggle="dropdown" aria-expanded="false"></i>
+          <ul class="dropdown-menu">
+            <li>
+              <span class="dropdown-item">
+                <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#send-to-phone-modal">Send to phone...</button>
+              </span>
+            </li>
+            {{- range $.PhoneAddressHistory }}
+            <li>
+              <span class="dropdown-item">
+                <button type="button" class="btn send-to-phone-address-menu-item" data-phone-address="{{.}}">Send to {{.}}</button>
+              </span>
+            </li>
             {{- end -}}
-          </td>
-          <td>
-            {{.DurationString}}
-          </td>
-          <td>
-            <button type="button" class="btn btn-secondary btn-sm d-none d-lg-inline-block piaf-mark-played">Played</button>
-          </td>
-          <td class="dropdown">
-            <i class="bi bi-three-dots-vertical" data-bs-toggle="dropdown" aria-expanded="false"></i>
-            <ul class="dropdown-menu">
-              <li>
-                <span class="dropdown-item">
-                  <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#send-to-phone-modal">Send to phone...</button>
-                </span>
-              </li>
-              {{- range $.PhoneAddressHistory }}
-              <li>
-                <span class="dropdown-item">
-                  <button type="button" class="btn send-to-phone-address-menu-item" data-phone-address="{{.}}">Send to {{.}}</button>
-                </span>
-              </li>
-              {{- end -}}
-            </ul>
-          </td>
-        </tr>
-      {{- end }}
-    </tbody>
-  </table>
-{{end}}
+          </ul>
+        </td>
+      </tr>
+    {{- end }}
+  </tbody>
+</table>
 
 <div id="send-to-phone-modal" class="modal send-to-phone-modal" tabindex="-1">
     <div class="modal-dialog">
@@ -107,5 +103,7 @@
 </div>
 
 <script src="/assets/sendtophone.js"></script>
+
+{{end}}
 
 {{template "base" .}}

@@ -54,8 +54,10 @@ class LocalPlayback {
             }
         })
         this.currentFile = mediaFile
-        this.fetching = true;
+        this.fetching = true
         this.howl.play()
+        navigator.mediaSession.setActionHandler('pause', () => { this.pause() })
+        navigator.mediaSession.setActionHandler('play', () => { this.resume() })
         windowMediaControls.showPlaybackState('fetching')
         windowTrackDisplay.showActiveTrack(mediaFile)
     }

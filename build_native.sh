@@ -9,3 +9,8 @@ npm run make_css
 export CGO_CXXFLAGS="`pkg-config --cflags soundtouch`"
 export CGO_LDFLAGS="`pkg-config --libs soundtouch`"
 go build -o ../dist/piaf -tags release -ldflags="-extldflags=-Wl,-no_warn_duplicate_libraries" .
+
+if [ "$1" == --install ]; then
+  echo Installing: may prompt for sudo password
+  sudo install -m 0755 ../dist/piaf /usr/local/bin/
+fi

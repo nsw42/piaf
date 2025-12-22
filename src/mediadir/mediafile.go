@@ -14,7 +14,7 @@ type MediaFile struct {
 	Path            string // the full path
 	RelativePath    string // the full path relative to the root media parent directory
 	HaveMetadata    bool
-	DurationString  string // extracted from ffmpeg output
+	DurationString  string // extracted from ffmpeg output, in the form hh:mm:ss
 	DurationSeconds int
 	Tooltip         string
 	InfoLink        string

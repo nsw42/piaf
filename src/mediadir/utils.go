@@ -34,7 +34,7 @@ func modTime(path string) time.Time {
 }
 
 func formatDuration(ss int) string {
-	// returns [[nd ]nh ] nm
+	// returns [nd ]hh:mm:ss
 	mm := ss / 60
 	ss -= mm * 60
 	if ss >= 30 {
@@ -46,11 +46,9 @@ func formatDuration(ss int) string {
 	hh -= dd * 24
 	var rtn string
 	if dd > 0 {
-		rtn = fmt.Sprintf("%dd %dh %02dm", dd, hh, mm)
-	} else if hh > 0 {
-		rtn = fmt.Sprintf("%dh %02dm", hh, mm)
+		rtn = fmt.Sprintf("%dd %02d:%02d:%02d", dd, hh, mm, ss)
 	} else {
-		rtn = fmt.Sprintf("%dm", mm)
+		rtn = fmt.Sprintf("%02d:%02d:%02d", hh, mm, ss)
 	}
 	return rtn
 }

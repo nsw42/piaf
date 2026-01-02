@@ -59,6 +59,12 @@ function initPiaf() {
     if (currentMode === null) {
         currentMode = modeRemoteControl
     }
+
+    // Hide the footer on index pages that have no tracks to play - typically just the root folder
+    if (document.getElementById('index-table') && document.getElementsByClassName('piaf-media-files').length == 0) {
+        document.getElementById('footer')?.classList?.add('d-none')
+    }
+
     setMode(currentMode)
 
     setTimeout(updateNowPlaying, 1)

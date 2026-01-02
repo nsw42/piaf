@@ -58,7 +58,7 @@
 
 {{/* footer - two variants: one with media controls (for index page) and one without (for controls page) */}}
 {{ if .IncludeFooterPauseResume }}
-  <div class="w-100 fixed-bottom footer d-flex flex-column">
+  <div id="footer" class="w-100 fixed-bottom footer d-flex flex-column">
     {{/* row 0: the footer border */}}
     <div class="w-100 footer-top-border bg-body">&nbsp;</div>
 
@@ -112,7 +112,7 @@
     <div class="w-100 footer-padding-bottom bg-primary" style="z-index: 2">&nbsp;</div>
   </div>
 {{ else }}
-  <div class="w-100 fixed-bottom footer d-flex justify-content-evenly align-items-center bg-primary">
+  <div id="footer" class="w-100 fixed-bottom footer d-flex justify-content-evenly align-items-center bg-primary">
     {{ if .EnableSpeedControl }}
       <div class="dropup dropup-center bg-primary">
         <button id="speed-menu-button" class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">

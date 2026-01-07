@@ -34,23 +34,35 @@ nav + div {
     margin-top: 64px;  // is also updated by JS
 }
 
-body:not(.footer-includes-slider) {
-    #main-content {
-        margin-bottom: 74px;
-    }
+body.no-footer {
+  #main-content {
+    margin-bottom: 0px;
+  }
 
-    #index-position-slider {
-        display: none;
-    }
+  #footer {
+    display: none !important;
+  }
 }
 
-body.footer-includes-slider {
-    #main-content {
-        margin-bottom: 134px;
+body:not(.no-footer) {
+    &:not(.footer-includes-slider) {
+        #main-content {
+            margin-bottom: 74px;
+        }
+
+        #index-position-slider {
+            display: none;
+        }
     }
 
-    #index-position-slider {
-        display: flex;
+    &.footer-includes-slider {
+        #main-content {
+            margin-bottom: 134px;
+        }
+
+        #index-position-slider {
+            display: flex;
+        }
     }
 }
 

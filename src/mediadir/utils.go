@@ -37,9 +37,6 @@ func formatDuration(ss int) string {
 	// returns [nd ]hh:mm:ss
 	mm := ss / 60
 	ss -= mm * 60
-	if ss >= 30 {
-		mm += 1
-	}
 	hh := mm / 60
 	mm -= hh * 60
 	dd := hh / 24

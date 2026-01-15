@@ -75,6 +75,8 @@ async function doPhoneUpload(sendToPhoneModal, phoneAddress, fileToUploadElt) {
 
     localStorage.setItem(localStorageKeyPhoneAddress, phoneAddress)
 
+    let threeDotMenuSnapshot = currentThreeDotsMenu // the global may change during the upload
+
     const response = await fetch('/phone', {
         method: "POST",
         body: JSON.stringify({
@@ -87,8 +89,8 @@ async function doPhoneUpload(sendToPhoneModal, phoneAddress, fileToUploadElt) {
     })
     sendToPhoneModal.classList.remove('sending')
     if (response.ok) {
-        currentThreeDotsMenu?.classList.remove('bi-three-dots-vertical', 'bi-arrow-repeat', 'bi-check2', 'bi-x')
-        currentThreeDotsMenu?.classList.add('bi-check2')
+        threeDotMenuSnapshot?.classList.remove('bi-three-dots-vertical', 'bi-arrow-repeat', 'bi-check2', 'bi-x')
+        threeDotMenuSnapshot?.classList.add('bi-check2')
         bootstrap.Modal.getInstance(sendToPhoneModal)?.hide()
     } else {
         sendToPhoneModal.classList.add('send-failed')

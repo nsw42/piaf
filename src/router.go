@@ -89,7 +89,7 @@ func getUriPathElements(c *gin.Context) (string, []string) {
 	// basically splits on /, but removes empty elements, to ensure that
 	// http://server/path//subdir doesn't cause headaches
 	path := c.Param("path")
-	path, err := url.QueryUnescape(path)
+	path, err := url.PathUnescape(path)
 	if err != nil {
 		return "", []string{}
 	}

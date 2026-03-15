@@ -90,9 +90,11 @@ func (mediaDir *MediaDirectory) Refresh() {
 	}
 
 	for _, fileName := range subdirsDeleted {
+		mediaDir.TotalDurationSeconds -= mediaDir.SubDirectories[fileName].TotalDurationSeconds
 		delete(mediaDir.SubDirectories, fileName)
 	}
 	for _, fileName := range filesDeleted {
+		mediaDir.TotalDurationSeconds -= mediaDir.Files[fileName].DurationSeconds
 		delete(mediaDir.Files, fileName)
 	}
 }

@@ -152,11 +152,19 @@ func indexPageHandler(c *gin.Context) {
 	mediaDir := findMediaDir(pathElts)
 	// traverse our media tree looking for the requested directory
 	if mediaDir == nil {
-		c.String(http.StatusNotFound, path+" not found")
+		// Redirect to root if the directory does not exist
+		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+		c.Redirect(http.StatusTemporaryRedirect, "/media/")
 		return
 	}
 
 	mediaDir.RefreshAndGetMetadata() // This ensures our cache is up-to-date
+	if mediaDir.RelativePath != "." && mediaDir.TotalDurationSeconds == 0 {
+		// Redirect to root if a sub-directory is empty
+		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+		c.Redirect(http.StatusTemporaryRedirect, "/media/")
+		return
+	}
 
 	pageTemplate, err := getTemplate("index.templ")
 	if err != nil || pageTemplate == nil {

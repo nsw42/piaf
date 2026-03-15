@@ -64,8 +64,10 @@ func (root *RootMediaDirectory) MarkFilePlayed(file *MediaFile) error {
 	}
 
 	mediaDir := root.Contents
+	mediaDir.TotalDurationSeconds -= file.DurationSeconds
 	for _, dir := range slices.Backward(pathElts[1:]) {
 		mediaDir = mediaDir.SubDirectories[dir]
+		mediaDir.TotalDurationSeconds -= file.DurationSeconds
 	}
 	delete(mediaDir.Files, pathElts[0])
 	return nil

@@ -7,8 +7,10 @@ RUN xx-apk add g++ alsa-lib-dev soundtouch soundtouch-dev
 WORKDIR /go/src
 COPY src /go/src/src
 
-RUN mkdir -p dist; \
-    cd src; \
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    mkdir -p /go/src/dist; \
+    cd /go/src/src; \
     go mod tidy; \
     XXPKGCONFIG=`xx-info`-pkg-config; \
     export CGO_CXXFLAGS="`$XXPKGCONFIG --cflags soundtouch`"; \

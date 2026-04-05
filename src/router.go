@@ -31,6 +31,8 @@ type GetStatusResponse struct {
 type TemplatePageArgs struct {
 	RequestPath              string
 	RequestPathElts          [][2]string
+	EnableRemoteControl      bool
+	EnableBrowserPlayback    bool
 	EnableSpeedControl       bool
 	IncludeFooterPauseResume bool
 }
@@ -183,6 +185,8 @@ func indexPageHandler(c *gin.Context) {
 		TemplatePageArgs: TemplatePageArgs{
 			RequestPath:              path,
 			RequestPathElts:          linkPathElts,
+			EnableRemoteControl:      Args.EnableRemoteControl,
+			EnableBrowserPlayback:    Args.EnableBrowserPlayback,
 			EnableSpeedControl:       Args.EnableSpeedControl,
 			IncludeFooterPauseResume: true,
 		},
@@ -210,6 +214,8 @@ func controlPageHandler(c *gin.Context) {
 			TemplatePageArgs: TemplatePageArgs{
 				RequestPath:              "",
 				RequestPathElts:          make([][2]string, 0),
+				EnableRemoteControl:      Args.EnableRemoteControl,
+				EnableBrowserPlayback:    false,
 				EnableSpeedControl:       Args.EnableSpeedControl,
 				IncludeFooterPauseResume: false,
 			},
@@ -218,8 +224,11 @@ func controlPageHandler(c *gin.Context) {
 	} else {
 		pageArgs = ControlPageArgs{
 			TemplatePageArgs: TemplatePageArgs{
-				RequestPath:     MediaPlayer.NowPlaying.RelativePath,
-				RequestPathElts: formatPathElts(splitPath(MediaPlayer.NowPlaying.RelativePath)),
+				RequestPath:           MediaPlayer.NowPlaying.RelativePath,
+				RequestPathElts:       formatPathElts(splitPath(MediaPlayer.NowPlaying.RelativePath)),
+				EnableRemoteControl:   Args.EnableRemoteControl,
+				EnableBrowserPlayback: false,
+				EnableSpeedControl:    Args.EnableSpeedControl,
 			},
 			CurrentStatus: MediaPlayer.State.String(),
 		}

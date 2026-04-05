@@ -5,14 +5,17 @@ import (
 	"fmt"
 	"html/template"
 	"os"
+	"strings"
 
 	"github.com/nsw42/piaf/mediadir"
 )
 
 type CommandLineArguments struct {
-	MediaParentDirectory string
-	EnableSpeedControl   bool
-	ListenPort           int
+	MediaParentDirectory  string
+	EnableRemoteControl   bool
+	EnableBrowserPlayback bool
+	EnableSpeedControl    bool
+	ListenPort            int
 }
 
 var Args *CommandLineArguments
@@ -23,6 +26,7 @@ var MediaPlayer *Player
 func parseArgs() *CommandLineArguments {
 	mediaDir := flag.String("d", "", "play files from DIR")
 	enableSpeed := flag.Bool("s", false, "enable speed controls")
+	playerTypes := flag.String("c", "both", "select whether to enable 'browser', 'remote', or 'both' for playback")
 	listenPort := flag.Int("p", 80, "port to listen on")
 	flag.Parse()
 
@@ -36,10 +40,28 @@ func parseArgs() *CommandLineArguments {
 		}
 	}
 
+	var enableRemoteControl, enableBrowserPlayback bool
+	switch strings.ToLower(*playerTypes) {
+	case "browser":
+		enableBrowserPlayback = true
+		enableRemoteControl = false
+	case "remote":
+		enableBrowserPlayback = false
+		enableRemoteControl = true
+	case "both":
+		enableBrowserPlayback = true
+		enableRemoteControl = true
+	default:
+		fmt.Println("Valid values for -c player selection are 'browser', 'remote', or 'both' (without the quotes)")
+		os.Exit(1)
+	}
+
 	args := CommandLineArguments{
-		MediaParentDirectory: *mediaDir,
-		EnableSpeedControl:   *enableSpeed,
-		ListenPort:           *listenPort,
+		MediaParentDirectory:  *mediaDir,
+		EnableRemoteControl:   enableRemoteControl,
+		EnableBrowserPlayback: enableBrowserPlayback,
+		EnableSpeedControl:    *enableSpeed,
+		ListenPort:            *listenPort,
 	}
 
 	return &args

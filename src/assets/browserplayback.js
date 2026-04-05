@@ -4,7 +4,7 @@ const localStoragePlaybackSpeedKey = 'piaf-local-speed'
 const localStoragePositionsKey = 'piaf-local-positions'
 const localStorageVolumeKey = 'piaf-local-volume'
 
-class LocalPlayback {
+class BrowserPlayback {
     // The player interface:
     currentTrackDuration = 0
 

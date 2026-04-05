@@ -11,7 +11,7 @@
 <script src="/assets/howler.core.js"></script>
 <script src="/assets/windowmediacontrols.js"></script>
 <script src="/assets/windowtrackdisplay.js"></script>
-<script src="/assets/localplayback.js"></script>
+<script src="/assets/browserplayback.js"></script>
 <script src="/assets/remotecontrol.js"></script>
 <script src="/assets/utils.js"></script>
 <script src="/assets/piaf.js"></script>
@@ -44,8 +44,10 @@
       {{end}}
     </div>
     <div class="navbar-brand border border-0 piaf-nav-fixed-size">
+      {{ if and .EnableBrowserPlayback .EnableRemoteControl }}
         <button type="button" id="mode-indicator-remote" class="btn btn-primary hide-when-local-playback"><i class="bi bi-volume-up fs-2"></i></button>
         <button type="button" id="mode-indicator-local" class="btn btn-primary hide-when-remote-control"><i class="bi bi-headphones fs-2"></i></i>
+      {{ end }}
     </div>
   </div>
 </nav>
@@ -137,7 +139,7 @@
 {{ end }}
 </div>
 
-<script>initPiaf();</script>
+<script>initPiaf({{.EnableBrowserPlayback}}, {{.EnableRemoteControl}});</script>
 </body>
 </html>
 {{end}}

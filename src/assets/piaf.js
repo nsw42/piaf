@@ -1,24 +1,25 @@
 const modeRemoteControl = 'remote';
-const modeLocalPlayback = 'local';
+const modeBrowserPlayback = 'browser';
 
 let currentMode;
 let modeButtonRemoteControl;
-let modeButtonLocalPlayback;
+let modeButtonBrowserPlayback;
 
 let body;
 let contentsDiv;
 let navbar;
 let nowPlayingFile;
 let indexPositionSlider;
+let pageContainsTracks;
 
-let playerLocalPlaback;
+let playerBrowserPlayback;
 let playerRemoteControl;
 let currentPlayer;
 
 let windowMediaControls;
 let windowTrackDisplay;
 
-function initPiaf() {
+function initPiaf(enableBrowserPlayback, enableRemoteControl) {
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
     for (const tooltipTriggerEl of tooltipTriggerList) {
         new bootstrap.Tooltip(tooltipTriggerEl)  // NOSONARQA: S1848 false-positive
@@ -34,11 +35,14 @@ function initPiaf() {
     window.addEventListener('resize', setContentPadding)
 
     modeButtonRemoteControl = document.getElementById('mode-indicator-remote')
-    modeButtonLocalPlayback = document.getElementById('mode-indicator-local')
-    modeButtonRemoteControl.addEventListener('click', () => { setMode(modeLocalPlayback) })
-    modeButtonLocalPlayback.addEventListener('click', () => { setMode(modeRemoteControl) })
+    modeButtonBrowserPlayback = document.getElementById('mode-indicator-local')
+    // modeButtonX do not exist when only one control type is enabled
+    modeButtonRemoteControl?.addEventListener('click', () => { setMode(modeBrowserPlayback) })
+    modeButtonBrowserPlayback?.addEventListener('click', () => { setMode(modeRemoteControl) })
 
     indexPositionSlider = document.getElementById('index-position-slider')
+
+    pageContainsTracks = document.getElementById('index-table') && document.getElementsByClassName('piaf-media-files').length > 0
 
     for (const button of document.getElementsByClassName('piaf-play-file')) {
         button.addEventListener('click', () => {
@@ -53,16 +57,16 @@ function initPiaf() {
     }
 
     playerRemoteControl = new RemoteControl()
-    playerLocalPlaback = new LocalPlayback()
+    playerBrowserPlayback = new BrowserPlayback()
 
-    currentMode = localStorage.getItem('piaf-current-mode');
+    currentMode = localStorage.getItem('piaf-current-mode')
     if (currentMode === null) {
         currentMode = modeRemoteControl
     }
-
-    // Hide the footer on index pages that have no tracks to play - typically just the root folder
-    if (document.getElementById('index-table') && document.getElementsByClassName('piaf-media-files').length == 0) {
-        body.classList.add('no-footer')
+    if (currentMode === modeRemoteControl && !enableRemoteControl) {
+        currentMode = modeBrowserPlayback
+    } else if (currentMode === modeBrowserPlayback && !enableBrowserPlayback) {
+        currentMode = modeRemoteControl
     }
 
     setMode(currentMode)
@@ -92,17 +96,22 @@ function setMode(newMode) {
     if (currentMode === modeRemoteControl) {
         currentPlayer = playerRemoteControl
         body.classList.add('mode-remote-control')
-        body.classList.remove('mode-local-playback')
+        body.classList.remove('mode-local-playback', 'no-footer')
         indexPositionSlider?.classList.remove('position-relative')  // needs to be display-block for the animation to work
         indexPositionSlider?.classList.add('animate__animated', 'animate__slideOutDown')
         indexPositionSlider?.addEventListener('animationend', () => {
             body.classList.remove('footer-includes-slider')
         }, {'once': true})
     } else {
-        currentPlayer = playerLocalPlaback
+        currentPlayer = playerBrowserPlayback
         body.classList.add('mode-local-playback')
         body.classList.remove('mode-remote-control')
         body.classList.add('footer-includes-slider')
+        if (!pageContainsTracks) {
+            // Hide the footer on index pages that have no tracks to play - typically just the root folder
+            body.classList.add('no-footer')
+        }
+
         indexPositionSlider?.classList.remove('animate__slideOutDown', 'position-relative') // needs to be visible, and display-block for the animation to work
         indexPositionSlider?.classList.add('animate__animated', 'animate__slideInUp')
         indexPositionSlider?.addEventListener('animationend', () => {
@@ -110,6 +119,7 @@ function setMode(newMode) {
             indexPositionSlider?.classList.add('position-relative') // needs to be position-relative for its display to be correct
         }, {'once': true})
     }
+
     localStorage.setItem('piaf-current-mode', newMode)
 }
 

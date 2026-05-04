@@ -8,6 +8,7 @@ class WindowMediaControls {
 
         this.currentState = 'stopped'
         this.bodyElement = document.getElementsByTagName('body')[0]
+        this.speedMultiplier = 1
 
         this.fetchingIndicator = document.getElementById('fetching')
 
@@ -44,7 +45,7 @@ class WindowMediaControls {
 
         this.positionSlider = document.getElementById('position-slider')
         this.positionText = document.getElementById('position-display')
-        this.trackDurationText = document.getElementById('track-duration')
+        this.trackRemainingText = document.getElementById('track-remaining')
 
         this.sliderDragActive = false
 
@@ -121,7 +122,14 @@ class WindowMediaControls {
     showPlaybackSpeed(speed) {
         if (this.speedMenuButton) {
             if (speed instanceof Number || typeof(speed) === 'number') {
+                this.speedMultiplier = speed
                 speed = speed.toString()
+            } else {
+                let speedString = speed;
+                if (speedString.endsWith('x')) {
+                    speedString = speedString.substring(0, speedString.length-1)
+                }
+                this.speedMultiplier = Number(speedString)
             }
             if (!speed.endsWith('x')) {
                 speed += "x"
@@ -189,14 +197,15 @@ class WindowMediaControls {
     }
 
     showTrackPositionAndDuration(position, duration) {
-        if (this.positionSlider && this.positionText && this.trackDurationText && !this.sliderDragActive) {
-            this.trackDurationText.innerHTML = formatDuration(duration)
+        if (this.positionSlider && this.positionText && this.trackRemainingText && !this.sliderDragActive) {
             if (position === null || position === undefined) {
                 this.positionSlider.value = 0
                 this.positionText.innerHTML = ""
+                this.trackRemainingText.innerHTML = formatDuration(duration)
             } else {
                 this.positionSlider.value = position * positionSliderResolution / duration
                 this.showTrackPosition(position)
+                this.trackRemainingText.innerHTML = "-" + formatDuration((duration - position) / this.speedMultiplier)
             }
         }
     }

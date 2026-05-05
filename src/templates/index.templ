@@ -21,7 +21,7 @@
       <tr>
         <td>{{/* play button */}}</td>
         <td><a class="btn btn-link text-start" href="/media/{{.RelativePath}}/">{{.Leaf}}</a></td>
-        <td>{{.TotalDurationString}}</td>
+        <td class="piaf-fixed-width-numbers">{{.TotalDurationString}}</td>
         <td></td>
         <td></td>
       </tr>
@@ -43,7 +43,7 @@
             <a class="btn btn-link ps-0" href="{{.InfoLink}}" target="_blank"><i class="bi bi-arrow-up-right-square"></i></a>
           {{- end -}}
         </td>
-        <td>
+        <td class="piaf-fixed-width-numbers">
           {{.DurationString}}
         </td>
         <td>
@@ -70,7 +70,7 @@
     <tr class="table-secondary">
       <td>{{/* play button */}}</td>
       <td>TOTAL</td>
-      <td>{{.MediaDir.TotalDurationString}}</td>
+      <td class="piaf-fixed-width-numbers">{{.MediaDir.TotalDurationString}}</td>
       <td></td>
       <td></td>
     </tr>

@@ -35,6 +35,7 @@ type TemplatePageArgs struct {
 	EnableBrowserPlayback    bool
 	EnableSpeedControl       bool
 	IncludeFooterPauseResume bool
+	ViewStyle                string
 }
 
 var phoneAddressHistoryFilePath string
@@ -60,6 +61,7 @@ func init() {
 func ConfigureRouter() *gin.Engine {
 	router := gin.Default()
 	router.GET("/", rootHandler)
+	router.POST("/viewstyle", viewstyleHandler)
 	router.GET("/media/*path", indexPageHandler)
 	router.Static("/mediafile", Args.MediaParentDirectory+"/Unplayed")
 	router.DELETE("/mediafile/*path", markPlayedHandler)
@@ -177,6 +179,11 @@ func indexPageHandler(c *gin.Context) {
 
 	linkPathElts := formatPathElts(pathElts)
 
+	viewStyle, err := c.Cookie("piaf-view-style")
+	if viewStyle == "" || err != nil {
+		viewStyle = "by-folders"
+	}
+
 	pageArgs := struct {
 		TemplatePageArgs
 		MediaDir            *mediadir.MediaDirectory
@@ -189,6 +196,7 @@ func indexPageHandler(c *gin.Context) {
 			EnableBrowserPlayback:    Args.EnableBrowserPlayback,
 			EnableSpeedControl:       Args.EnableSpeedControl,
 			IncludeFooterPauseResume: true,
+			ViewStyle:                viewStyle,
 		},
 		MediaDir:            mediaDir,
 		PhoneAddressHistory: phoneAddressHistory,
@@ -201,6 +209,16 @@ func indexPageHandler(c *gin.Context) {
 	}
 
 	c.Status(http.StatusOK)
+}
+
+func viewstyleHandler(c *gin.Context) {
+	newStyle := c.PostForm("style")
+	if (newStyle != "by-age") && (newStyle != "by-folders") {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	c.SetCookie("piaf-view-style", newStyle, 60*60*24*365*10, "/", "", false, false)
+	c.Redirect(http.StatusMovedPermanently, "/")
 }
 
 func controlPageHandler(c *gin.Context) {

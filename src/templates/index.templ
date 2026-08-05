@@ -17,7 +17,7 @@
         <td></td>
       </tr>
     {{- end -}}
-    {{- range .MediaDir.SubDirectories }}
+    {{- range .SubDirectories }}
       <tr>
         <td>{{/* play button */}}</td>
         <td><a class="btn btn-link text-start" href="/media/{{.RelativePath}}/">{{.Leaf}}</a></td>
@@ -26,7 +26,7 @@
         <td></td>
       </tr>
     {{- end -}}
-    {{- range .MediaDir.Files }}
+    {{- range .Files }}
       <tr class="piaf-media-files" data-file="{{.RelativePath}}">
         <td>
           <button type="button" class="btn btn-link piaf-play-file piaf-play-icon"><i class="bi bi-play"></i></button>
@@ -70,7 +70,7 @@
     <tr class="table-secondary">
       <td>{{/* play button */}}</td>
       <td>TOTAL</td>
-      <td class="piaf-fixed-width-numbers">{{.MediaDir.TotalDurationString}}</td>
+      <td class="piaf-fixed-width-numbers">{{.TotalDurationString}}</td>
       <td></td>
       <td></td>
     </tr>

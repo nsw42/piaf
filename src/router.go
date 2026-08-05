@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"maps"
 	"mime/multipart"
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -17,6 +19,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/nsw42/piaf/mediadir"
+)
+
+type ViewStyle string
+
+const (
+	ViewByAge     ViewStyle = "by-age"
+	ViewInFolders ViewStyle = "by-folders"
 )
 
 type GetStatusResponse struct {
@@ -40,6 +49,9 @@ type TemplatePageArgs struct {
 
 var phoneAddressHistoryFilePath string
 var phoneAddressHistory = make([]string, 0)
+var podcastSortOrder []directoryAge = nil
+var podcastViewOffset = 0
+var oldestFile *mediadir.MediaFile // Remember the last file that was top of the by-age view
 
 func init() {
 	home, err := os.UserHomeDir()
@@ -150,8 +162,77 @@ func rootHandler(c *gin.Context) {
 	c.Redirect(http.StatusMovedPermanently, "/media/")
 }
 
+type directoryAge struct {
+	dir   *mediadir.MediaDirectory
+	files []*mediadir.MediaFile
+	age   time.Time
+}
+
+func getEpisodeTime(mf *mediadir.MediaFile) time.Time {
+	// Not mf.ModTime, because that's the file modification time
+	// We want to know when the podcast episode was published, which is (probably) encoded in its filename
+	slash := strings.LastIndex(mf.RelativePath, "/")
+	leaf := mf.RelativePath[slash+1:]
+	re := regexp.MustCompile(`\d{4}-\d{2}-\d{2}`)
+	if re.MatchString(leaf) {
+		// leaf starts with YYYY-MM-DD as expected
+		yyyy, _ := strconv.Atoi(leaf[0:4])
+		mm, _ := strconv.Atoi(leaf[5:7])
+		dd, _ := strconv.Atoi(leaf[8:10])
+		rtn := time.Date(yyyy, time.Month(mm), dd, 0, 0, 0, 0, time.UTC)
+		return rtn
+	} else {
+		log.Println(leaf, "does not match YYYY-MM-DD")
+		return mf.ModTime // it's the best info we've got
+	}
+}
+
+func getPodcastDirectoryAge(dir *mediadir.MediaDirectory) directoryAge {
+	oldest := time.Now()
+	files := make([]*mediadir.MediaFile, 0, len(dir.Files))
+	for _, mf := range dir.Files {
+		files = append(files, mf)
+	}
+	slices.SortFunc(files, func(mf1, mf2 *mediadir.MediaFile) int {
+		return strings.Compare(mf1.RelativePath, mf2.RelativePath)
+	})
+
+	for _, mf := range dir.Files {
+		fileTime := getEpisodeTime(mf)
+		if fileTime.Before(oldest) {
+			oldest = fileTime
+		}
+	}
+
+	return directoryAge{dir, files, oldest}
+}
+
+func sortPodcastSeriesByAge() []directoryAge {
+	podcastAges := make([]directoryAge, 0)
+	dirsToCheck := make([]*mediadir.MediaDirectory, 1)
+	dirsToCheck[0] = Media.Contents
+	for len(dirsToCheck) > 0 {
+		var dir *mediadir.MediaDirectory
+		dir, dirsToCheck = dirsToCheck[0], dirsToCheck[1:]
+		age := getPodcastDirectoryAge(dir)
+		podcastAges = append(podcastAges, age)
+		for d := range maps.Values(dir.SubDirectories) {
+			dirsToCheck = append(dirsToCheck, d)
+		}
+	}
+	slices.SortFunc(podcastAges, func(dir1age, dir2age directoryAge) int {
+		return dir1age.age.Compare(dir2age.age)
+	})
+	return podcastAges
+}
+
 func indexPageHandler(c *gin.Context) {
 	path, pathElts := getUriPathElements(c)
+
+	viewStyle, err := c.Cookie("piaf-view-style")
+	if (err != nil) || (viewStyle != string(ViewByAge) && viewStyle != string(ViewInFolders)) {
+		viewStyle = string(ViewInFolders)
+	}
 
 	mediaDir := findMediaDir(pathElts)
 	// traverse our media tree looking for the requested directory
@@ -170,6 +251,55 @@ func indexPageHandler(c *gin.Context) {
 		return
 	}
 
+	var filesInViewOrder []*mediadir.MediaFile
+	if path == "/" && viewStyle == string(ViewByAge) {
+		// Construct a fake media directory containing all files
+		var podcasts []directoryAge
+		if podcastSortOrder == nil {
+			podcasts = sortPodcastSeriesByAge()
+			if Media.Contents.TotalDurationSeconds > 0 {
+				// We've finally finished building the index, so we can save the sort order
+				podcastSortOrder = podcasts
+			}
+		} else {
+			// we have an established sort order - use it
+			podcasts = podcastSortOrder
+			if oldestFile != nil {
+				currentViewFiles := slices.Collect(maps.Values(podcasts[podcastViewOffset].dir.Files))
+				if !slices.Contains(currentViewFiles, oldestFile) {
+					// The file has gone away - so move to the next column
+					podcastViewOffset += 1
+					oldestFile = nil
+				}
+			}
+		}
+		if len(podcasts) > 0 {
+			// Only do anything if there are episodes found
+			podcastIndexes := make([]int, len(podcasts))
+			done := false
+			filesInViewOrder = make([]*mediadir.MediaFile, 0)
+			for !done {
+				done = true // until we decide otherwise
+				// make one pass over the podcasts, offset by the current view offset
+				for i := range len(podcasts) {
+					i = (podcastViewOffset + i) % len(podcasts)
+					podcast := podcasts[i]
+					fileIndex := podcastIndexes[i]
+					if fileIndex < len(podcast.files) {
+						filesInViewOrder = append(filesInViewOrder, podcast.files[fileIndex])
+						podcastIndexes[i] += 1
+						done = false
+					}
+				}
+			}
+			oldestFile = filesInViewOrder[0]
+		}
+	} else {
+		// files are just the ones from this directory
+		filesInViewOrder = slices.Collect(maps.Values(mediaDir.Files))
+		// Sort??
+	}
+
 	pageTemplate, err := getTemplate("index.templ")
 	if err != nil || pageTemplate == nil {
 		log.Println("Unable to read template index.templ", err)
@@ -179,14 +309,11 @@ func indexPageHandler(c *gin.Context) {
 
 	linkPathElts := formatPathElts(pathElts)
 
-	viewStyle, err := c.Cookie("piaf-view-style")
-	if viewStyle == "" || err != nil {
-		viewStyle = "by-folders"
-	}
-
 	pageArgs := struct {
 		TemplatePageArgs
-		MediaDir            *mediadir.MediaDirectory
+		SubDirectories      map[string]*mediadir.MediaDirectory
+		Files               []*mediadir.MediaFile
+		TotalDurationString string
 		PhoneAddressHistory []string
 	}{
 		TemplatePageArgs: TemplatePageArgs{
@@ -198,7 +325,9 @@ func indexPageHandler(c *gin.Context) {
 			IncludeFooterPauseResume: true,
 			ViewStyle:                viewStyle,
 		},
-		MediaDir:            mediaDir,
+		SubDirectories:      mediaDir.SubDirectories,
+		Files:               filesInViewOrder,
+		TotalDurationString: mediaDir.TotalDurationString,
 		PhoneAddressHistory: phoneAddressHistory,
 	}
 	err = pageTemplate.Execute(c.Writer, pageArgs)
@@ -213,7 +342,7 @@ func indexPageHandler(c *gin.Context) {
 
 func viewstyleHandler(c *gin.Context) {
 	newStyle := c.PostForm("style")
-	if (newStyle != "by-age") && (newStyle != "by-folders") {
+	if (newStyle != string(ViewByAge)) && (newStyle != string(ViewInFolders)) {
 		c.Status(http.StatusBadRequest)
 		return
 	}

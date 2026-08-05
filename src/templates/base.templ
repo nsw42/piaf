@@ -44,11 +44,24 @@
         </span>
       {{end}}
     </div>
-    <div class="navbar-brand border border-0 piaf-nav-fixed-size">
-      {{ if and .EnableBrowserPlayback .EnableRemoteControl }}
-        <button type="button" id="mode-indicator-remote" class="btn btn-primary hide-when-local-playback"><i class="bi bi-volume-up fs-2"></i></button>
-        <button type="button" id="mode-indicator-local" class="btn btn-primary hide-when-remote-control"><i class="bi bi-headphones fs-2"></i></i>
-      {{ end }}
+    <div class="navbar-brand border border-0 piaf-nav-fixed-size d-flex justify-content-end pe-2">
+      {{- if eq .RequestPath "/" -}}
+        <div class="pe-0 d-inline-block">
+            <form action="/viewstyle" method="POST">
+              {{- if eq .ViewStyle "by-folders" -}}
+              <button type="submit" id="view-style-by-age" name="style" value="by-age" class="btn btn-primary"><i class="bi bi-list-nested fs-2"></i></button>
+              {{- else -}}
+              <button type="submit" id="view-style-folders" name="style" value="by-folders" class="btn btn-primary"><i class="bi bi-calendar3 fs-2"></i></button>
+              {{- end -}}
+            </form>
+        </div>
+      {{- end -}}
+      {{- if and .EnableBrowserPlayback .EnableRemoteControl -}}
+        <div class="d-inline-block">
+          <button type="button" id="mode-indicator-remote" class="btn btn-primary hide-when-local-playback"><i class="bi bi-volume-up fs-2"></i></button>
+          <button type="button" id="mode-indicator-local" class="btn btn-primary hide-when-remote-control"><i class="bi bi-headphones fs-2"></i></i>
+        </div>
+      {{- end -}}
     </div>
   </div>
 </nav>

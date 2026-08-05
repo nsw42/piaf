@@ -308,7 +308,9 @@ func indexPageHandler(c *gin.Context) {
 	} else {
 		// files are just the ones from this directory
 		filesInViewOrder = slices.Collect(maps.Values(mediaDir.Files))
-		// Sort??
+		slices.SortFunc(filesInViewOrder, func(mf1, mf2 *mediadir.MediaFile) int {
+			return strings.Compare(mf1.RelativePath, mf2.RelativePath)
+		})
 	}
 
 	pageTemplate, err := getTemplate("index.templ")

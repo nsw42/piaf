@@ -227,25 +227,25 @@ func sortPodcastSeriesByAge() []directoryAge {
 }
 
 func constructFilesByPodcastAge() []*mediadir.MediaFile {
-	// Conceptually, sort the podcasts by their oldest file;
+	// Conceptually, sort the columns by their oldest file;
 	// list the files in the podcast in columns:
 	// column 0 is the files from the podcast with the oldest file,
 	// column 1 is the files from the podcast with the next oldest file
 	// then return the list of files obtained by taking horizontal slices through the table
 	// But this is further complicated by the podcastViewOffset, which defines which column
 	// to start the horizontal slice
-	var podcasts []directoryAge
+	var columns []directoryAge
 	if podcastSortOrder == nil {
-		podcasts = sortPodcastSeriesByAge()
+		columns = sortPodcastSeriesByAge()
 		if Media.Contents.TotalDurationSeconds > 0 {
 			// We've finally finished building the index, so we can save the sort order
-			podcastSortOrder = podcasts
+			podcastSortOrder = columns
 		}
 	} else {
 		// we have an established sort order - use it
-		podcasts = podcastSortOrder
+		columns = podcastSortOrder
 		if oldestFile != nil {
-			currentViewFiles := slices.Collect(maps.Values(podcasts[podcastViewOffset].dir.Files))
+			currentViewFiles := slices.Collect(maps.Values(columns[podcastViewOffset].dir.Files))
 			if !slices.Contains(currentViewFiles, oldestFile) {
 				// The file has gone away - so move to the next column
 				podcastViewOffset += 1
@@ -254,23 +254,22 @@ func constructFilesByPodcastAge() []*mediadir.MediaFile {
 		}
 	}
 	filesInViewOrder := make([]*mediadir.MediaFile, 0)
-	if len(podcasts) > 0 {
+	if len(columns) > 0 {
 		// Only do anything if there are episodes found
-		podcastIndexes := make([]int, len(podcasts))
 		done := false
+		row := 0
 		for !done {
 			done = true // until we decide otherwise
 			// make one pass over the podcasts, offset by the current view offset
-			for i := range len(podcasts) {
-				i = (podcastViewOffset + i) % len(podcasts)
-				podcast := podcasts[i]
-				fileIndex := podcastIndexes[i]
-				if fileIndex < len(podcast.files) {
-					filesInViewOrder = append(filesInViewOrder, podcast.files[fileIndex])
-					podcastIndexes[i] += 1
+			for i := range len(columns) {
+				column := (podcastViewOffset + i) % len(columns)
+				podcast := columns[column]
+				if row < len(podcast.files) {
+					filesInViewOrder = append(filesInViewOrder, podcast.files[row])
 					done = false
 				}
 			}
+			row += 1
 		}
 		oldestFile = filesInViewOrder[0]
 	}

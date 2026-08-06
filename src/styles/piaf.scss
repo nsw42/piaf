@@ -154,7 +154,7 @@ div.navbar-nav {
     }
 }
 
-// Index pages
+// index.templ
 
 .piaf-media-table {
     .btn-link {
@@ -181,11 +181,17 @@ div.navbar-nav {
     }
 
     // track title
-    td:nth-child(2) button {
-        max-width: 60vw;
-        text-overflow: ellipsis;
-        text-wrap-mode: nowrap;
-        overflow: hidden;
+    td:nth-child(2) {
+        a, button {
+            width: calc(60vw);
+
+            @media (width: 576px) {
+                width: calc(20vw);
+            }
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
     }
 
     td:nth-child(3) {

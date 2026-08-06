@@ -17,7 +17,8 @@ type MediaDirectory struct {
 	Leaf                 string                     // just the final element of the path
 	RelativePath         string                     // the full path relative to the root media parent directory
 	SubDirectories       map[string]*MediaDirectory // indexed by leaf
-	Files                map[string]*MediaFile      // Each entry is a full path
+	Files                map[string]*MediaFile      // Key is a full path
+	SortedFiles          []*MediaFile               // Same as Files, but sorted by filename
 	TotalDurationString  string
 	TotalDurationSeconds int
 	ModTime              time.Time
@@ -36,6 +37,7 @@ func readMediaDir(root, parent string) *MediaDirectory {
 		RelativePath:   relativePath,
 		SubDirectories: make(map[string]*MediaDirectory, 0),
 		Files:          make(map[string]*MediaFile, 0),
+		SortedFiles:    make([]*MediaFile, 0),
 	}
 
 	rtn.Refresh()
@@ -88,6 +90,11 @@ func (mediaDir *MediaDirectory) Refresh() {
 			mediaDir.refreshFile(fileName, subPath, &filesDeleted)
 		}
 	}
+
+	mediaDir.SortedFiles = slices.Collect(maps.Values(mediaDir.Files))
+	slices.SortFunc(mediaDir.SortedFiles, func(mf1, mf2 *MediaFile) int {
+		return strings.Compare(mf1.RelativePath, mf2.RelativePath)
+	})
 
 	for _, fileName := range subdirsDeleted {
 		mediaDir.TotalDurationSeconds -= mediaDir.SubDirectories[fileName].TotalDurationSeconds

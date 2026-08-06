@@ -163,9 +163,8 @@ func rootHandler(c *gin.Context) {
 }
 
 type directoryAge struct {
-	dir   *mediadir.MediaDirectory
-	files []*mediadir.MediaFile
-	age   time.Time
+	dir *mediadir.MediaDirectory
+	age time.Time
 }
 
 func getEpisodeTime(mf *mediadir.MediaFile) time.Time {
@@ -189,22 +188,14 @@ func getEpisodeTime(mf *mediadir.MediaFile) time.Time {
 
 func getPodcastDirectoryAge(dir *mediadir.MediaDirectory) directoryAge {
 	oldest := time.Now()
-	files := make([]*mediadir.MediaFile, 0, len(dir.Files))
-	for _, mf := range dir.Files {
-		files = append(files, mf)
-	}
-	slices.SortFunc(files, func(mf1, mf2 *mediadir.MediaFile) int {
-		return strings.Compare(mf1.RelativePath, mf2.RelativePath)
-	})
-
-	for _, mf := range dir.Files {
+	for _, mf := range dir.SortedFiles {
 		fileTime := getEpisodeTime(mf)
 		if fileTime.Before(oldest) {
 			oldest = fileTime
 		}
 	}
 
-	return directoryAge{dir, files, oldest}
+	return directoryAge{dir, oldest}
 }
 
 func sortPodcastSeriesByAge() []directoryAge {
@@ -245,7 +236,7 @@ func constructFilesByPodcastAge() []*mediadir.MediaFile {
 		// we have an established sort order - use it
 		columns = podcastSortOrder
 		if oldestFile != nil {
-			currentViewFiles := slices.Collect(maps.Values(columns[podcastViewOffset].dir.Files))
+			currentViewFiles := columns[podcastViewOffset].dir.SortedFiles
 			if !slices.Contains(currentViewFiles, oldestFile) {
 				// The file has gone away - so move to the next column
 				podcastViewOffset += 1
@@ -264,8 +255,8 @@ func constructFilesByPodcastAge() []*mediadir.MediaFile {
 			for i := range len(columns) {
 				column := (podcastViewOffset + i) % len(columns)
 				podcast := columns[column]
-				if row < len(podcast.files) {
-					filesInViewOrder = append(filesInViewOrder, podcast.files[row])
+				if row < len(podcast.dir.SortedFiles) {
+					filesInViewOrder = append(filesInViewOrder, podcast.dir.SortedFiles[row])
 					done = false
 				}
 			}
@@ -302,10 +293,7 @@ func indexPageHandler(c *gin.Context) {
 		filesInViewOrder = constructFilesByPodcastAge()
 	} else {
 		// files are just the ones from this directory
-		filesInViewOrder = slices.Collect(maps.Values(mediaDir.Files))
-		slices.SortFunc(filesInViewOrder, func(mf1, mf2 *mediadir.MediaFile) int {
-			return strings.Compare(mf1.RelativePath, mf2.RelativePath)
-		})
+		filesInViewOrder = mediaDir.SortedFiles
 	}
 
 	pageTemplate, err := getTemplate("index.templ")

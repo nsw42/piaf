@@ -38,8 +38,8 @@
         <td></td>
       </tr>
     {{- end -}}
-    {{- range .Files }}
-      <tr class="piaf-media-files" data-file="{{.RelativePath}}">
+    {{- range $index, $file := .Files }}
+      <tr class="piaf-media-files {{ if gt $index 10 }}show-if-files-expanded{{ end }}" data-file="{{.RelativePath}}">
         <td>
           <button type="button" class="btn btn-link piaf-play-file piaf-play-icon"><i class="bi bi-play"></i></button>
         </td>
@@ -79,6 +79,19 @@
           </ul>
         </td>
       </tr>
+      {{ if eq $index 10 }}
+      <tr>
+        <td>
+          <button type="button" class="btn btn-link text-decoration-none" onclick="document.getElementById('index-table').classList.toggle('files-expanded')">
+            <div class="hide-if-files-expanded"><i class="bi bi-caret-right-fill"></i></div>
+            <div class="show-if-files-expanded"><i class="bi bi-caret-down-fill"></i></div>
+          </button>
+        </td>
+        <td>
+          <i>Show more</i>
+        </td>
+      </tr>
+      {{- end -}}
     {{- end }}
     <tr class="table-secondary">
       <td>{{/* play button */}}</td>

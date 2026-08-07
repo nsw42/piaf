@@ -1,5 +1,5 @@
 {{define "content"}}
-<table id="index-table" class="piaf-media-table table table-striped folders-shown">
+<table id="index-table" class="piaf-media-table table table-striped {{ if or (ne .RequestPath "/") (ne .ViewStyle "by-age") -}} folders-shown {{- end -}}">
   <colgroup>
     <col span="1">
     <col span="1">

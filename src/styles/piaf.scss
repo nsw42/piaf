@@ -182,11 +182,18 @@ div.navbar-nav {
 
     // track title
     td:nth-child(2) {
-        a:not(.no-pad), button {
-            width: calc(60vw);
+        max-width: calc(60vw);
 
-            @media (width: 576px) {
-                width: calc(20vw);
+        @media (width: 576px) {
+            max-width: calc(20vw);
+        }
+
+        a, button {
+            &.has-info-link {
+                max-width: calc(100% - 16px);
+            }
+            &:not(.has-info-link) {
+                max-width: calc(100%);
             }
             text-overflow: ellipsis;
             overflow: hidden;

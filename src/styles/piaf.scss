@@ -182,7 +182,7 @@ div.navbar-nav {
 
     // track title
     td:nth-child(2) {
-        a, button {
+        a:not(.no-pad), button {
             width: calc(60vw);
 
             @media (width: 576px) {

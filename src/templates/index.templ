@@ -1,5 +1,5 @@
 {{define "content"}}
-<table id="index-table" class="piaf-media-table table table-striped">
+<table id="index-table" class="piaf-media-table table table-striped folders-shown">
   <colgroup>
     <col span="1">
     <col span="1">
@@ -9,7 +9,19 @@
   </colgroup>
   <tbody>
     {{/* directories first */}}
-    {{- if ne .RequestPath "/" -}}
+    {{- if eq .RequestPath "/" -}}
+      {{- if eq .ViewStyle "by-age" -}}
+      <tr>
+        <td>
+          <button type="button" class="btn btn-link text-decoration-none hide-if-folders-visible" onclick="document.getElementById('index-table').classList.add('folders-shown')"><i class="bi bi-caret-right-fill"></i></button>
+          <button type="button" class="btn btn-link text-decoration-none show-if-folders-visible" onclick="document.getElementById('index-table').classList.remove('folders-shown')"><i class="bi bi-caret-down-fill"></i></button>
+        </td>
+        <td>
+          <i>Folders</i>
+        </td>
+      </tr>
+      {{- end -}}
+    {{- else -}}
       <tr>
         <td></td>
         <td><a class="btn btn-link" href=".."><i class="bi bi-arrow-90deg-up"></i></a><a class="btn btn-link text-start" href="..">Up</a></td>
@@ -18,7 +30,7 @@
       </tr>
     {{- end -}}
     {{- range .SubDirectories }}
-      <tr>
+      <tr class="show-if-folders-visible">
         <td>{{/* play button */}}</td>
         <td><a class="btn btn-link text-start" href="/media/{{.RelativePath}}/">{{.Leaf}}</a></td>
         <td class="piaf-fixed-width-numbers">{{.TotalDurationString}}</td>

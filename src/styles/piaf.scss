@@ -161,6 +161,10 @@ div.navbar-nav {
         --bs-btn-padding-y: 0px;
     }
 
+    &.folders-shown .hide-if-folders-visible, &:not(.folders-shown) .show-if-folders-visible {
+        display: none !important;
+    }
+
     button.piaf-play-icon {
         --bs-btn-padding-x: 2px;
         text-decoration: none;

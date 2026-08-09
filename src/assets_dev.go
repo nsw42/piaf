@@ -3,7 +3,9 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -21,8 +23,18 @@ func configureAssetsForRouter(router *gin.Engine, path string) {
 	router.Static(path, "./assets")
 }
 
+func assetURL(name string) string {
+	// Cache-bust on the asset's own mtime, so edits (eg sass -w rebuilds) are picked up immediately
+	info, err := os.Stat(filepath.Join("assets", name))
+	if err != nil {
+		return "/assets/" + name
+	}
+	return fmt.Sprintf("/assets/%s?v=%d", name, info.ModTime().Unix())
+}
+
 func getTemplate(templateName string) (*template.Template, error) {
 	base := filepath.Join("templates", "base.templ")
 	path := filepath.Join("templates", templateName)
-	return template.ParseFiles(path, base)
+	funcs := template.FuncMap{"asset": assetURL}
+	return template.New(templateName).Funcs(funcs).ParseFiles(path, base)
 }

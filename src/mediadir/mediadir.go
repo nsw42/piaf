@@ -91,11 +91,6 @@ func (mediaDir *MediaDirectory) Refresh() {
 		}
 	}
 
-	mediaDir.SortedFiles = slices.Collect(maps.Values(mediaDir.Files))
-	slices.SortFunc(mediaDir.SortedFiles, func(mf1, mf2 *MediaFile) int {
-		return strings.Compare(mf1.RelativePath, mf2.RelativePath)
-	})
-
 	for _, fileName := range subdirsDeleted {
 		mediaDir.TotalDurationSeconds -= mediaDir.SubDirectories[fileName].TotalDurationSeconds
 		delete(mediaDir.SubDirectories, fileName)
@@ -104,6 +99,11 @@ func (mediaDir *MediaDirectory) Refresh() {
 		mediaDir.TotalDurationSeconds -= mediaDir.Files[fileName].DurationSeconds
 		delete(mediaDir.Files, fileName)
 	}
+
+	mediaDir.SortedFiles = slices.Collect(maps.Values(mediaDir.Files))
+	slices.SortFunc(mediaDir.SortedFiles, func(mf1, mf2 *MediaFile) int {
+		return strings.Compare(mf1.RelativePath, mf2.RelativePath)
+	})
 }
 
 func (mediaDir *MediaDirectory) refreshFile(fileName, subPath string, filesDeleted *[]string) {

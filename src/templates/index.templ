@@ -42,7 +42,9 @@
       </tr>
     {{- end -}}
     {{- range $index, $file := .Files }}
-      <tr class="piaf-media-files {{ if gt $index 10 }}show-if-files-expanded{{ end }}" data-file="{{.RelativePath}}">
+      {{/* if len($.Files) <= 12, all rows are visible;
+           if len($.Files) >= 13, only the first 11 rows (i.e. $index <= 10) are visible */}}
+      <tr class="piaf-media-files {{ if or (gt $index 11) (and (eq $index 11) (gt (len $.Files) 12) ) }}show-if-files-expanded{{ end }}" data-file="{{.RelativePath}}">
         <td>
           <button type="button" class="btn btn-link piaf-play-file piaf-play-icon"><i class="bi bi-play"></i></button>
         </td>
@@ -82,7 +84,7 @@
           </ul>
         </td>
       </tr>
-      {{ if eq $index 10 }}
+      {{ if and (eq $index 10) (gt (len $.Files) 12) }}
       <tr>
         <td>
           <button type="button" class="btn btn-link text-decoration-none" onclick="document.getElementById('index-table').classList.toggle('files-expanded')">

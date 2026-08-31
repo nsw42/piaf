@@ -71,6 +71,7 @@ func main() {
 	var err error
 
 	Args = parseArgs()
+	loadPodcastViewOffset()
 	Media, err = mediadir.ReadMediaDir(Args.MediaParentDirectory)
 	if err != nil {
 		panic(err)

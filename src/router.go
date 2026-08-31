@@ -51,6 +51,7 @@ var phoneAddressHistoryFilePath string
 var phoneAddressHistory = make([]string, 0)
 var podcastSortOrder []directoryAge = nil
 var podcastViewOffset = 0
+var podcastViewOffsetFilePath string
 var oldestFile *mediadir.MediaFile // Remember the last file that was top of the by-age view
 
 func init() {
@@ -68,6 +69,29 @@ func init() {
 
 	contents, _ := io.ReadAll(historyFile)
 	json.Unmarshal(contents, &phoneAddressHistory)
+}
+
+func loadPodcastViewOffset() {
+	// Called once the media directory (Args.MediaParentDirectory) is known
+	podcastViewOffsetFilePath = fmt.Sprintf("%s/.piaf_view_offset", Args.MediaParentDirectory)
+	offsetFile, err := os.Open(podcastViewOffsetFilePath)
+	if err != nil {
+		return
+	}
+	defer offsetFile.Close()
+
+	contents, _ := io.ReadAll(offsetFile)
+	json.Unmarshal(contents, &podcastViewOffset)
+}
+
+func savePodcastViewOffset() {
+	if podcastViewOffsetFilePath == "" {
+		return
+	}
+	marshalled, err := json.Marshal(podcastViewOffset)
+	if err == nil {
+		os.WriteFile(podcastViewOffsetFilePath, marshalled, 0644)
+	}
 }
 
 func ConfigureRouter() *gin.Engine {
@@ -241,8 +265,15 @@ func constructFilesByPodcastAge() []*mediadir.MediaFile {
 				// The file has gone away - so move to the next column
 				podcastViewOffset += 1
 				oldestFile = nil
+				savePodcastViewOffset()
 			}
 		}
+	}
+	if len(columns) > 0 && podcastViewOffset >= len(columns) {
+		// The view offset was restored from a previous run, but the number of
+		// podcast series has since shrunk - wrap it back into range
+		podcastViewOffset = podcastViewOffset % len(columns)
+		savePodcastViewOffset()
 	}
 	filesInViewOrder := make([]*mediadir.MediaFile, 0)
 	if len(columns) > 0 {

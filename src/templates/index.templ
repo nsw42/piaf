@@ -49,9 +49,9 @@
       </tr>
     {{- end -}}
     {{- range $index, $file := .Files }}
-      {{/* if len($.Files) <= 12, all rows are visible;
-           if len($.Files) >= 13, only the first 11 rows (i.e. $index <= 10) are visible */}}
-      <tr class="piaf-media-files {{ if or (gt $index 11) (and (eq $index 11) (gt (len $.Files) 12) ) }}show-if-files-expanded{{ end }}" data-file="{{.RelativePath}}">
+      {{/* if len($.Files) <= 11, all rows are visible;
+           if len($.Files) >= 12, only the first 10 rows (i.e. $index <= 9) are visible */}}
+      <tr class="piaf-media-files {{ if or (gt $index 10) (and (eq $index 10) (gt (len $.Files) 11) ) }}show-if-files-expanded{{ end }}" data-file="{{.RelativePath}}">
         <td>
           <button type="button" class="btn btn-link piaf-play-file piaf-play-icon"><i class="bi bi-play"></i></button>
         </td>

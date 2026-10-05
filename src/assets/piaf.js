@@ -85,17 +85,13 @@ function getDataFileFromContainingTR(button) {
 
 async function markFilePlayed(mediaFile) {
     await fetch(`/mediafile/${encodeURIComponent(mediaFile)}`, { method: "DELETE" })
-        .then(() => cookieStore.set({
-            name: cookieNameMarkedPlayed,
-            value: mediaFile,
-            maxAge: 120  // Only show the Undo button for 2 minutes
-        }))
+        .then(() => Cookies.set(cookieNameMarkedPlayed, mediaFile, { expires: new Date(Date.now() * 1 + 2*60*1000) }))
         .then(() => location.reload())
 }
 
 async function undoMarkFilePlayed(mediaFile) {
     await fetch(`/mediafile/${encodeURIComponent(mediaFile)}`, { method: "PATCH" })
-        .then(() => cookieStore.delete(cookieNameMarkedPlayed))
+        .then(() => Cookies.remove(cookieNameMarkedPlayed))
         .then(() => location.reload())
 }
 

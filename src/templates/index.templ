@@ -1,8 +1,8 @@
 {{define "content"}}
 {{- if ne .MarkedPlayed "" -}}
   <div class="w-100 text-bg-info d-flex py-1 justify-content-between">
-    <span class="ms-1">{{.PlayedLeaf}} marked played</span>
-    <button type="button" class="btn btn-secondary btn-sm d-none d-lg-inline-block piaf-undo-mark-played me-1" data-file="{{.MarkedPlayed}}">Undo</button>
+    <div class="ms-1 text-truncate">{{.PlayedLeaf}} marked played</div>
+    <button type="button" class="btn btn-secondary btn-sm d-inline-block piaf-undo-mark-played me-1" data-file="{{.MarkedPlayed}}">Undo</button>
   </div>
 {{- end -}}
 
@@ -20,8 +20,8 @@
       {{- if eq .ViewStyle "by-age" -}}
       <tr>
         <td>
-          <button type="button" class="btn btn-link text-decoration-none hide-if-folders-visible" onclick="document.getElementById('index-table').classList.add('folders-shown')"><i class="bi bi-caret-right-fill"></i></button>
-          <button type="button" class="btn btn-link text-decoration-none show-if-folders-visible" onclick="document.getElementById('index-table').classList.remove('folders-shown')"><i class="bi bi-caret-down-fill"></i></button>
+          <button type="button" class="btn btn-link text-decoration-none hide-if-folders-visible px-1" onclick="document.getElementById('index-table').classList.add('folders-shown')"><i class="bi bi-caret-right-fill"></i></button>
+          <button type="button" class="btn btn-link text-decoration-none show-if-folders-visible px-1" onclick="document.getElementById('index-table').classList.remove('folders-shown')"><i class="bi bi-caret-down-fill"></i></button>
         </td>
         <td>
           <i>Folders</i>
@@ -94,7 +94,7 @@
       {{ if and (eq $index 10) (gt (len $.Files) 12) }}
       <tr>
         <td>
-          <button type="button" class="btn btn-link text-decoration-none" onclick="document.getElementById('index-table').classList.toggle('files-expanded')">
+          <button type="button" class="btn btn-link text-decoration-none px-1" onclick="document.getElementById('index-table').classList.toggle('files-expanded')">
             <div class="hide-if-files-expanded"><i class="bi bi-caret-right-fill"></i></div>
             <div class="show-if-files-expanded"><i class="bi bi-caret-down-fill"></i></div>
           </button>

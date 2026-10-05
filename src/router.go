@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"regexp"
 	"slices"
 	"strconv"
@@ -101,6 +102,7 @@ func ConfigureRouter() *gin.Engine {
 	router.GET("/media/*path", indexPageHandler)
 	router.Static("/mediafile", Args.MediaParentDirectory+"/Unplayed")
 	router.DELETE("/mediafile/*path", markPlayedHandler)
+	router.PATCH("/mediafile/*path", markUnplayedHandler)
 	router.GET("/player/control", controlPageHandler)
 	router.PUT("/player/play/*path", playHandler)
 	router.PUT("/player/pause", pauseHandler)
@@ -336,8 +338,12 @@ func indexPageHandler(c *gin.Context) {
 
 	linkPathElts := formatPathElts(pathElts)
 
+	markedPlayed, _ := c.Cookie("marked-played")
+
 	pageArgs := struct {
 		TemplatePageArgs
+		MarkedPlayed        string
+		PlayedLeaf          string
 		SubDirectories      map[string]*mediadir.MediaDirectory
 		Files               []*mediadir.MediaFile
 		TotalDurationString string
@@ -352,6 +358,8 @@ func indexPageHandler(c *gin.Context) {
 			IncludeFooterPauseResume: true,
 			ViewStyle:                viewStyle,
 		},
+		MarkedPlayed:        markedPlayed,
+		PlayedLeaf:          filepath.Base(markedPlayed),
 		SubDirectories:      mediaDir.SubDirectories,
 		Files:               filesInViewOrder,
 		TotalDurationString: mediaDir.TotalDurationString,
@@ -462,6 +470,25 @@ func markPlayedHandler(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
+	c.Status(http.StatusNoContent)
+}
+
+func markUnplayedHandler(c *gin.Context) {
+	path := c.Param("path")
+	path, err := url.PathUnescape(path)
+	if err != nil {
+		log.Println(err)
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	err = Media.MarkFileUnplayed(path)
+	if err != nil {
+		log.Println(err)
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
 	c.Status(http.StatusNoContent)
 }
 

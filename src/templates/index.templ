@@ -1,4 +1,11 @@
 {{define "content"}}
+{{- if ne .MarkedPlayed "" -}}
+  <div class="w-100 text-bg-info d-flex py-1 justify-content-between">
+    <span class="ms-1">{{.PlayedLeaf}} marked played</span>
+    <button type="button" class="btn btn-secondary btn-sm d-none d-lg-inline-block piaf-undo-mark-played me-1" data-file="{{.MarkedPlayed}}">Undo</button>
+  </div>
+{{- end -}}
+
 <table id="index-table" class="piaf-media-table table table-striped {{ if or (ne .RequestPath "/") (ne .ViewStyle "by-age") -}} folders-shown {{- end -}}">
   <colgroup>
     <col span="1">

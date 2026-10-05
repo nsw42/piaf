@@ -73,3 +73,42 @@ func (root *RootMediaDirectory) MarkFilePlayed(file *MediaFile) error {
 	mediaDir.updateSortedFiles()
 	return nil
 }
+
+func (root *RootMediaDirectory) MarkFileUnplayed(relativePath string) error {
+	src := filepath.Join(root.PlayedMediaDirectory, relativePath)
+	if !IsFile(src) {
+		return fmt.Errorf("file '%s' not found", src)
+	}
+
+	dest := filepath.Join(root.UnplayedMediaDirectory, relativePath)
+	if err := os.MkdirAll(filepath.Dir(dest), 0755); err != nil {
+		return err
+	}
+	if err := os.Rename(src, dest); err != nil {
+		return err
+	}
+
+	// Adding the file to our records requires refreshing our view of
+	// its parent directory
+	pathElts := make([]string, 0)
+	filePath := relativePath
+	for filePath != "" {
+		dir, leaf := filepath.Split(filePath)
+		pathElts = append(pathElts, leaf)
+		filePath = strings.TrimSuffix(dir, string(filepath.Separator))
+	}
+
+	mediaDir := root.Contents
+	for _, dir := range slices.Backward(pathElts) {
+		subdir, found := mediaDir.SubDirectories[dir]
+		if !found {
+			// our records are incomplete or we're at the final element of the path
+			mediaDir.Refresh()
+			break
+		} else {
+			mediaDir = subdir
+		}
+	}
+
+	return nil
+}

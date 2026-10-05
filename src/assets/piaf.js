@@ -1,6 +1,8 @@
 const modeRemoteControl = 'remote';
 const modeBrowserPlayback = 'browser';
 
+const cookieNameMarkedPlayed = 'marked-played';
+
 let currentMode;
 let modeButtonRemoteControl;
 let modeButtonBrowserPlayback;
@@ -51,9 +53,11 @@ function initPiaf(enableBrowserPlayback, enableRemoteControl) {
     }
 
     for (const button of document.getElementsByClassName('piaf-mark-played')) {
-        button.addEventListener('click', () => {
-            markFilePlayed(getDataFileFromContainingTR(button))
-        })
+        button.addEventListener('click', () => markFilePlayed(getDataFileFromContainingTR(button)))
+    }
+
+    for (const button of document.getElementsByClassName('piaf-undo-mark-played')) {
+        button.addEventListener('click', () => undoMarkFilePlayed(button.dataset.file))
     }
 
     playerRemoteControl = new RemoteControl()
@@ -79,10 +83,20 @@ function getDataFileFromContainingTR(button) {
     return tr.dataset.file
 }
 
-function markFilePlayed(mediaFile) {
-    fetch(`/mediafile/${encodeURIComponent(mediaFile)}`, { method: "DELETE" }).then(() => {
-        location.reload()
-    })
+async function markFilePlayed(mediaFile) {
+    await fetch(`/mediafile/${encodeURIComponent(mediaFile)}`, { method: "DELETE" })
+        .then(() => cookieStore.set({
+            name: cookieNameMarkedPlayed,
+            value: mediaFile,
+            maxAge: 120  // Only show the Undo button for 2 minutes
+        }))
+        .then(() => location.reload())
+}
+
+async function undoMarkFilePlayed(mediaFile) {
+    await fetch(`/mediafile/${encodeURIComponent(mediaFile)}`, { method: "PATCH" })
+        .then(() => cookieStore.delete(cookieNameMarkedPlayed))
+        .then(() => location.reload())
 }
 
 function setContentPadding() {

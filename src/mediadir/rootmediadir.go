@@ -70,5 +70,6 @@ func (root *RootMediaDirectory) MarkFilePlayed(file *MediaFile) error {
 		mediaDir.TotalDurationSeconds -= file.DurationSeconds
 	}
 	delete(mediaDir.Files, pathElts[0])
+	mediaDir.updateSortedFiles()
 	return nil
 }

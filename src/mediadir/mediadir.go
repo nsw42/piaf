@@ -100,6 +100,10 @@ func (mediaDir *MediaDirectory) Refresh() {
 		delete(mediaDir.Files, fileName)
 	}
 
+	mediaDir.updateSortedFiles()
+}
+
+func (mediaDir *MediaDirectory) updateSortedFiles() {
 	mediaDir.SortedFiles = slices.Collect(maps.Values(mediaDir.Files))
 	slices.SortFunc(mediaDir.SortedFiles, func(mf1, mf2 *MediaFile) int {
 		return strings.Compare(mf1.RelativePath, mf2.RelativePath)

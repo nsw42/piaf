@@ -60,6 +60,14 @@ function initPiaf(enableBrowserPlayback, enableRemoteControl) {
         button.addEventListener('click', () => undoMarkFilePlayed(button.dataset.file))
     }
 
+    for (const button of document.getElementsByClassName('piaf-toggle-folders')) {
+        button.addEventListener('click', () => document.getElementById('index-table')?.classList.toggle('folders-shown'))
+    }
+
+    for (const button of document.getElementsByClassName('piaf-toggle-files')) {
+        button.addEventListener('click', () => document.getElementById('index-table')?.classList.toggle('files-expanded'))
+    }
+
     playerRemoteControl = new RemoteControl()
     playerBrowserPlayback = new BrowserPlayback()
 

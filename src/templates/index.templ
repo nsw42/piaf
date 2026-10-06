@@ -20,11 +20,13 @@
       {{- if eq .ViewStyle "by-age" -}}
       <tr>
         <td>
-          <button type="button" class="btn btn-link text-decoration-none hide-if-folders-visible px-1" onclick="document.getElementById('index-table').classList.add('folders-shown')"><i class="bi bi-caret-right-fill"></i></button>
-          <button type="button" class="btn btn-link text-decoration-none show-if-folders-visible px-1" onclick="document.getElementById('index-table').classList.remove('folders-shown')"><i class="bi bi-caret-down-fill"></i></button>
+          <button type="button" class="btn btn-link text-decoration-none px-1 piaf-toggle-folders">
+            <div class="hide-if-folders-visible"><i class="bi bi-caret-right-fill"></i></div>
+            <div class="show-if-folders-visible"><i class="bi bi-caret-down-fill"></i></div>
+          </button>
         </td>
         <td>
-          <i>Folders</i>
+          <button type="button" class="btn btn-link btn-text-link piaf-toggle-folders"><i>Folders</i></button>
         </td>
         <td></td>
         <td></td>
@@ -94,13 +96,16 @@
       {{ if and (eq $index 9) (gt (len $.Files) 11) }}
       <tr>
         <td>
-          <button type="button" class="btn btn-link text-decoration-none px-1" onclick="document.getElementById('index-table').classList.toggle('files-expanded')">
+          <button type="button" class="btn btn-link text-decoration-none px-1 piaf-toggle-files">
             <div class="hide-if-files-expanded"><i class="bi bi-caret-right-fill"></i></div>
             <div class="show-if-files-expanded"><i class="bi bi-caret-down-fill"></i></div>
           </button>
         </td>
         <td>
-          <i>Show more</i>
+          <button type="button" class="btn btn-link btn-text-link piaf-toggle-files">
+            <div class="hide-if-files-expanded"><i>Show more</i></div>
+            <div class="show-if-files-expanded"><i>Show less</i></div>
+          </button>
         </td>
         <td></td>
         <td></td>

@@ -161,6 +161,12 @@ div.navbar-nav {
         --bs-btn-padding-y: 0px;
     }
 
+    .btn-text-link {
+        text-decoration: none;
+        --bs-btn-color: var(--bs-table-color-state);
+        --bs-btn-padding-x: 0px;
+    }
+
     &.folders-shown .hide-if-folders-visible, &:not(.folders-shown) .show-if-folders-visible {
         display: none !important;
     }

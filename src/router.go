@@ -243,14 +243,7 @@ func sortPodcastSeriesByAge() []directoryAge {
 	return podcastAges
 }
 
-func constructFilesByPodcastAge() []*mediadir.MediaFile {
-	// Conceptually, sort the columns by their oldest file;
-	// list the files in the podcast in columns:
-	// column 0 is the files from the podcast with the oldest file,
-	// column 1 is the files from the podcast with the next oldest file
-	// then return the list of files obtained by taking horizontal slices through the table
-	// But this is further complicated by the podcastViewOffset, which defines which column
-	// to start the horizontal slice
+func getPodcastAgeColumns() []directoryAge {
 	var columns []directoryAge
 	if podcastSortOrder == nil {
 		columns = sortPodcastSeriesByAge()
@@ -273,10 +266,22 @@ func constructFilesByPodcastAge() []*mediadir.MediaFile {
 	}
 	if len(columns) > 0 && podcastViewOffset >= len(columns) {
 		// The view offset was restored from a previous run, but the number of
-		// podcast series has since shrunk - wrap it back into range
-		podcastViewOffset = podcastViewOffset % len(columns)
+		// podcast series has since shrunk
+		podcastViewOffset = 0
 		savePodcastViewOffset()
 	}
+	return columns
+}
+
+func constructFilesByPodcastAge() []*mediadir.MediaFile {
+	// Conceptually, sort the columns by their oldest file;
+	// list the files in the podcast in columns:
+	// column 0 is the files from the podcast with the oldest file,
+	// column 1 is the files from the podcast with the next oldest file
+	// then return the list of files obtained by taking horizontal slices through the table
+	// But this is further complicated by the podcastViewOffset, which defines which column
+	// to start the horizontal slice
+	columns := getPodcastAgeColumns()
 	filesInViewOrder := make([]*mediadir.MediaFile, 0)
 	if len(columns) > 0 {
 		// Only do anything if there are episodes found

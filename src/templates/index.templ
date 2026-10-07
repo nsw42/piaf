@@ -13,11 +13,11 @@
     {{- if ne .MarkedPlayed "" -}}
       <tr>
         <td class="text-bg-success"></td>
-        <td class="text-bg-success" colspan="2">
-          <div class="ms-1 text-truncate">{{.PlayedLeaf}} marked played</div>
-        </td>
-        <td class="text-bg-success" colspan="2">
-          <button type="button" class="btn btn-secondary btn-sm d-inline-block piaf-undo-mark-played me-1" data-file="{{.MarkedPlayed}}">Undo</button>
+        <td class="text-bg-success" id="undo-td" colspan="4"> <!-- colspan is updated at runtime by JS -->
+          <div class="d-flex align-items-baseline">
+            <span class="ms-1 text-truncate flex-grow-1">{{.PlayedLeaf}} marked played</span>
+            <button type="button" class="btn btn-secondary btn-sm d-inline-block piaf-undo-mark-played me-1 overflow-visible" data-file="{{.MarkedPlayed}}">Undo</button>
+          </div>
         </td>
       </tr>
     {{- end -}}
@@ -31,20 +31,17 @@
             <div class="show-if-folders-visible"><i class="bi bi-caret-down-fill"></i></div>
           </button>
         </td>
-        <td>
+        <td colspan="3">
           <button type="button" class="btn btn-link btn-text-link piaf-toggle-folders"><i>Folders</i></button>
         </td>
-        <td></td>
-        <td></td>
-        <td></td>
+        <td class="d-none d-lg-table-cell"></div>
       </tr>
       {{- end -}}
     {{- else -}}
       <tr>
         <td></td>
-        <td><a class="btn btn-link" href=".."><i class="bi bi-arrow-90deg-up"></i></a><a class="btn btn-link text-start" href="..">Up</a></td>
-        <td></td>
-        <td></td>
+        <td colspan="3"><a class="btn btn-link" href=".."><i class="bi bi-arrow-90deg-up"></i></a><a class="btn btn-link text-start" href="..">Up</a></td>
+        <td class="d-none d-lg-table-cell"></div>
       </tr>
     {{- end -}}
     {{- range .SubDirectories }}
@@ -79,8 +76,8 @@
         <td class="piaf-fixed-width-numbers">
           {{.DurationString}}
         </td>
-        <td>
-          <button type="button" class="btn btn-secondary btn-sm d-none d-lg-inline-block piaf-mark-played">Played</button>
+        <td class="d-none d-lg-inline-block">
+          <button type="button" class="btn btn-secondary btn-sm piaf-mark-played px-0 px-lg-1">Played</button>
         </td>
         <td class="dropdown">
           <i class="bi bi-three-dots-vertical" data-bs-toggle="dropdown" aria-expanded="false"></i>
@@ -107,15 +104,13 @@
             <div class="show-if-files-expanded"><i class="bi bi-caret-down-fill"></i></div>
           </button>
         </td>
-        <td>
+        <td colspan="3">
           <button type="button" class="btn btn-link btn-text-link piaf-toggle-files">
             <div class="hide-if-files-expanded"><i>Show more</i></div>
             <div class="show-if-files-expanded"><i>Show less</i></div>
           </button>
         </td>
-        <td></td>
-        <td></td>
-        <td></td>
+        <td class="d-none d-lg-table-cell"></div>
       </tr>
       {{- end -}}
     {{- end }}
@@ -124,7 +119,7 @@
       <td>TOTAL</td>
       <td class="piaf-fixed-width-numbers">{{.TotalDurationString}}</td>
       <td></td>
-      <td></td>
+      <td class="d-none d-lg-table-cell"></div>
     </tr>
   </tbody>
 </table>

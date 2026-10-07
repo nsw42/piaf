@@ -10,6 +10,7 @@ let modeButtonBrowserPlayback;
 let body;
 let contentsDiv;
 let navbar;
+let undoTd;
 let nowPlayingFile;
 let indexPositionSlider;
 let pageContainsTracks;
@@ -33,6 +34,7 @@ function initPiaf(enableBrowserPlayback, enableRemoteControl) {
     body = document.getElementsByTagName('body')[0]
     contentsDiv = document.getElementById('main-content')
     navbar = document.querySelector('.navbar.fixed-top')
+    undoTd = document.getElementById('undo-td')
     window.addEventListener('DOMContentLoaded', setContentPadding)
     window.addEventListener('resize', setContentPadding)
 
@@ -106,6 +108,8 @@ async function undoMarkFilePlayed(mediaFile) {
 function setContentPadding() {
     const navbarHeight = navbar.offsetHeight;
     contentsDiv.style.marginTop = `${navbarHeight}px`;
+
+    undoTd?.setAttribute('colspan', window.innerWidth < 992 ? 3 : 4)
 }
 
 function setMode(newMode) {

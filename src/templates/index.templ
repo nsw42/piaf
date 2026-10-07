@@ -1,6 +1,6 @@
 {{define "content"}}
 {{- if ne .MarkedPlayed "" -}}
-  <div class="w-100 text-bg-info d-flex py-1 justify-content-between">
+  <div class="w-100 text-bg-success d-flex py-1 justify-content-between">
     <div class="ms-1 text-truncate">{{.PlayedLeaf}} marked played</div>
     <button type="button" class="btn btn-secondary btn-sm d-inline-block piaf-undo-mark-played me-1" data-file="{{.MarkedPlayed}}">Undo</button>
   </div>

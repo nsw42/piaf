@@ -1,10 +1,4 @@
 {{define "content"}}
-{{- if ne .MarkedPlayed "" -}}
-  <div class="w-100 text-bg-success d-flex py-1 justify-content-between">
-    <div class="ms-1 text-truncate">{{.PlayedLeaf}} marked played</div>
-    <button type="button" class="btn btn-secondary btn-sm d-inline-block piaf-undo-mark-played me-1" data-file="{{.MarkedPlayed}}">Undo</button>
-  </div>
-{{- end -}}
 
 <table id="index-table" class="piaf-media-table table table-striped {{ if or (ne .RequestPath "/") (ne .ViewStyle "by-age") -}} folders-shown {{- end -}}">
   <colgroup>
@@ -15,6 +9,18 @@
     <col span="1">
   </colgroup>
   <tbody>
+    {{/* Undo row */}}
+    {{- if ne .MarkedPlayed "" -}}
+      <tr>
+        <td class="text-bg-success"></td>
+        <td class="text-bg-success" colspan="2">
+          <div class="ms-1 text-truncate">{{.PlayedLeaf}} marked played</div>
+        </td>
+        <td class="text-bg-success" colspan="2">
+          <button type="button" class="btn btn-secondary btn-sm d-inline-block piaf-undo-mark-played me-1" data-file="{{.MarkedPlayed}}">Undo</button>
+        </td>
+      </tr>
+    {{- end -}}
     {{/* directories first */}}
     {{- if eq .RequestPath "/" -}}
       {{- if eq .ViewStyle "by-age" -}}

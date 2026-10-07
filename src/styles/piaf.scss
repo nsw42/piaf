@@ -124,7 +124,7 @@ div.navbar-nav {
     z-index: 1;
 }
 
-@media (max-width: 768px) {
+@media (width < 768px) {
     body.mode-local-playback .volume-container  {
         display: none !important;
     }
@@ -136,19 +136,19 @@ div.navbar-nav {
     }
 }
 
-@media (max-width: 576px) {
+@media (width < 576px) {
     #pause:disabled, #resume:disabled, #fast-backward:disabled, #fast-forward:disabled {
         display: none !important;
     }
 }
 
-@media (max-width: 450px) {
+@media (width < 450px) {
     .volume-container {
         display: none !important;
     }
 }
 
-@media (max-width: 360px) {
+@media (width < 360px) {
     #fast-backward, #fast-forward {
         display: none !important;
     }
@@ -197,7 +197,7 @@ div.navbar-nav {
     td:nth-child(2) {
         max-width: calc(60vw);
 
-        @media (width: 576px) {
+        @media (width < 576px) {
             max-width: calc(20vw);
         }
 

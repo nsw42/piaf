@@ -103,15 +103,20 @@ class WindowMediaControls {
                          this.volumeSlider)
         allControls = allControls.filter(Boolean)
 
-        this.disableWhenStopped = allControls
+        this.enableInState = new Map()  // map from state (string) to list of controls to *enable* in that state
+        this.enableInState.set('stopped', [])
+        this.enableInState.set('uninitialised', [])
+        this.enableInState.set('fetching', [])
+        this.enableInState.set('initialising', [])
+        const enableWhenPaused = []
+        enableWhenPaused.push(...this.resumeButtons, this.speedMenuButton, this.positionSlider, this.volumeSlider)
+        this.enableInState.set('paused', enableWhenPaused)
+        this.enableInState.set('playing', allControls.filter(c => !this.resumeButtons.includes(c)))
 
-        this.disableWhenInitialising = allControls
-
-        this.disableWhenPaused = this.pauseButtons.concat(...this.fastBackwardButtons, ...this.fastForwardButtons)
-        this.enableWhenPaused = allControls.filter(c => !this.disableWhenPaused.includes(c))
-
-        this.disableWhenPlaying = this.resumeButtons
-        this.enableWhenPlaying = allControls.filter(c => !this.disableWhenPlaying.includes(c))
+        this.disableInState = new Map()  // map from state (string) to list of controls to *disable* in that state
+        for (const state of this.enableInState.keys()) {
+            this.disableInState.set(state, allControls.filter(c => !this.enableInState.get(state).includes(c)))
+        }
     }
 
     getFirstFileOnPage() {
@@ -150,45 +155,26 @@ class WindowMediaControls {
             this.bodyElement.classList.remove('fetching')
         }
 
-        switch (state) {
-            case 'stopped':
-            case 'uninitialised':
-                if (location.pathname == '/player/control') {
-                    // not sensible to stay on this page
-                    let mediaDir = ""
-                    if (nowPlayingFile) {
-                        // return to the media directory
-                        const slash = nowPlayingFile.lastIndexOf('/')
-                        mediaDir = nowPlayingFile.substr(0, slash)
-                    }
-                    gotoPage('/media/' + mediaDir)
-                } else {
-                    if (nowPlayingFile) {
-                        // refresh the index
-                        location.reload()
-                    } else {
-                        disableElements(this.disableWhenStopped)
-                        if (this.getFirstFileOnPage()) {
-                            // it makes sense to enable the 'play' button
-                            enableElements(this.resumeButtons)
-                        }
-                    }
+        disableElements(this.disableInState.get(state) ?? [])
+        enableElements(this.enableInState.get(state) ?? [])
+
+        if (state === 'stopped' || state === 'uninitialised') {
+            if (location.pathname == '/player/control') {
+                // not sensible to stay on this page
+                let mediaDir = ""
+                if (nowPlayingFile) {
+                    // return to the media directory
+                    const slash = nowPlayingFile.lastIndexOf('/')
+                    mediaDir = nowPlayingFile.substr(0, slash)
                 }
-                break
-            case 'initialising':
-                disableElements(this.disableWhenInitialising)
-                break
-            case 'fetching':
-                disableElements(this.disableWhenStopped)
-                break
-            case 'paused':
-                disableElements(this.disableWhenPaused)
-                enableElements(this.enableWhenPaused)
-                break
-            case 'playing':
-                disableElements(this.disableWhenPlaying)
-                enableElements(this.enableWhenPlaying)
-                break
+                gotoPage('/media/' + mediaDir)
+            } else if (nowPlayingFile) {
+                // refresh the index
+                location.reload()
+            } else if (this.getFirstFileOnPage()) {
+                // it makes sense to enable the 'play' button
+                enableElements(this.resumeButtons)
+            }
         }
     }
 

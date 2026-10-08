@@ -20,7 +20,7 @@ else
 fi
 
 if [ -z "$2" ]; then
-  CROSS_BUILDER=go-cross-builder-1.24-alpine3.22-$PLATFORM
+  CROSS_BUILDER=go-cross-builder-1-alpine3.22-$PLATFORM
 else
   CROSS_BUILDER=$2
 fi

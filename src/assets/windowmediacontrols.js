@@ -21,7 +21,7 @@ class WindowMediaControls {
         for (const button of this.resumeButtons) {
             button.addEventListener("click", () => {
                 if (this.currentState === 'stopped' || this.currentState === 'uninitialised') {
-                    const firstFile = this.getFirstFileOnPage()
+                    const firstFile = getFirstFileOnPage()
                     if (firstFile !== null) {
                         // Should never be null, because we should have disabled the
                         // 'resume' button if there are no files
@@ -119,11 +119,6 @@ class WindowMediaControls {
         }
     }
 
-    getFirstFileOnPage() {
-        const trs = document.getElementsByClassName('piaf-media-files')
-        return (trs.length == 0) ? null : trs[0].dataset.file
-    }
-
     showPlaybackSpeed(speed) {
         if (this.speedMenuButton) {
             if (speed instanceof Number || typeof(speed) === 'number') {
@@ -171,7 +166,7 @@ class WindowMediaControls {
             } else if (nowPlayingFile) {
                 // refresh the index
                 location.reload()
-            } else if (this.getFirstFileOnPage()) {
+            } else if (getFirstFileOnPage()) {
                 // it makes sense to enable the 'play' button
                 enableElements(this.resumeButtons)
             }

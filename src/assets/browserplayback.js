@@ -181,6 +181,18 @@ class BrowserPlayback {
         if (this.howl === null) {
             windowMediaControls.showPlaybackState('stopped')
             windowMediaControls.showVolume(this.getSavedVolume())
+
+            const tr = getFirstFileTr()
+            if (tr !== null) {
+                const file = getDataFileFromContainingTR(tr)
+                const pos = this.getSavedPosition(file)
+                const durnText = tr.children[2].textContent.trim()
+                const durnFields = durnText.split(":")
+                const hh = Number.parseInt(durnFields[0])
+                const mm = Number.parseInt(durnFields[1])
+                const ss = Number.parseInt(durnFields[2])
+                windowMediaControls.showTrackPositionAndDuration(pos, ((hh * 60) + mm) * 60 + ss)
+            }
         } else if (this.fetching) {
             windowMediaControls.showPlaybackState('fetching')
         } else {

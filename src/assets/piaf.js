@@ -154,3 +154,13 @@ async function updateNowPlaying() {
     }
     setTimeout(updateNowPlaying, 1000)
 }
+
+function getFirstFileTr() {
+    const trs = document.getElementsByClassName('piaf-media-files')
+    return (trs.length == 0) ? null : trs[0]
+}
+
+function getFirstFileOnPage() {
+    const tr = getFirstFileTr()
+    return (tr === null) ? null : tr.dataset.file
+}

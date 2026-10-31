@@ -117,6 +117,8 @@ func ConfigureRouter() *gin.Engine {
 }
 
 func splitPath(path string) []string {
+	// basically splits on /, but removes empty elements, to ensure that
+	// http://server/path//subdir doesn't cause headaches
 	pathElts := make([]string, 0)
 	for elt := range strings.SplitSeq(path, "/") {
 		if elt != "" {
@@ -128,14 +130,7 @@ func splitPath(path string) []string {
 }
 
 func getUriPathElements(c *gin.Context) (string, []string) {
-	// basically splits on /, but removes empty elements, to ensure that
-	// http://server/path//subdir doesn't cause headaches
 	path := c.Param("path")
-	path, err := url.PathUnescape(path)
-	if err != nil {
-		return "", []string{}
-	}
-
 	return path, splitPath(path)
 }
 
@@ -343,7 +338,7 @@ func indexPageHandler(c *gin.Context) {
 
 	linkPathElts := formatPathElts(pathElts)
 
-	markedPlayed, _ := c.Cookie("marked-played")
+	markedPlayed := getMarkedPlayedCookie(c)
 
 	pageArgs := struct {
 		TemplatePageArgs
@@ -459,6 +454,20 @@ func getPlayerStatusHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+func getMarkedPlayedCookie(c *gin.Context) string {
+	// Not c.Cookie(), which uses QueryUnescape, turning a literal + into a space.
+	// js-cookie leaves + unencoded, but percent-encodes other awkward characters.
+	cookie, err := c.Request.Cookie("marked-played")
+	if err != nil {
+		return ""
+	}
+	value, err := url.PathUnescape(cookie.Value)
+	if err != nil {
+		return ""
+	}
+	return value
+}
+
 func markPlayedHandler(c *gin.Context) {
 	_, pathElts := getUriPathElements(c)
 	if len(pathElts) == 0 {
@@ -480,14 +489,8 @@ func markPlayedHandler(c *gin.Context) {
 
 func markUnplayedHandler(c *gin.Context) {
 	path := c.Param("path")
-	path, err := url.PathUnescape(path)
-	if err != nil {
-		log.Println(err)
-		c.Status(http.StatusBadRequest)
-		return
-	}
 
-	err = Media.MarkFileUnplayed(path)
+	err := Media.MarkFileUnplayed(path)
 	if err != nil {
 		log.Println(err)
 		c.Status(http.StatusInternalServerError)

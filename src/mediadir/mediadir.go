@@ -177,7 +177,12 @@ func (mediaDir *MediaDirectory) GetMediaLengths() {
 		subdir.GetMediaLengths()
 	}
 
-	// Calculate the total duration of the directory contents
+	mediaDir.recalculateTotalDuration()
+}
+
+// recalculateTotalDuration recomputes the total duration of the directory contents
+// from the cached durations of its files and subdirectories (non-recursive)
+func (mediaDir *MediaDirectory) recalculateTotalDuration() {
 	mediaDir.TotalDurationSeconds = 0
 	for _, subdir := range mediaDir.SubDirectories {
 		mediaDir.TotalDurationSeconds += subdir.TotalDurationSeconds

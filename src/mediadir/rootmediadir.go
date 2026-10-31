@@ -63,14 +63,24 @@ func (root *RootMediaDirectory) MarkFilePlayed(file *MediaFile) error {
 		return errors.New("error splitting path " + file.RelativePath)
 	}
 
+	// Collect the chain of directories from the root down to the file's parent
 	mediaDir := root.Contents
-	mediaDir.TotalDurationSeconds -= file.DurationSeconds
+	dirChain := []*MediaDirectory{mediaDir}
 	for _, dir := range slices.Backward(pathElts[1:]) {
-		mediaDir = mediaDir.SubDirectories[dir]
-		mediaDir.TotalDurationSeconds -= file.DurationSeconds
+		subdir, found := mediaDir.SubDirectories[dir]
+		if !found {
+			return errors.New("directory not found in cache for " + file.RelativePath)
+		}
+		mediaDir = subdir
+		dirChain = append(dirChain, mediaDir)
 	}
 	delete(mediaDir.Files, pathElts[0])
 	mediaDir.updateSortedFiles()
+
+	// Recalculate totals from the cached data, from the file's parent up to the root
+	for _, dir := range slices.Backward(dirChain) {
+		dir.recalculateTotalDuration()
+	}
 	return nil
 }
 

@@ -77,23 +77,28 @@ async function doPhoneUpload(sendToPhoneModal, phoneAddress, fileToUploadElt) {
 
     let threeDotMenuSnapshot = currentThreeDotsMenu // the global may change during the upload
 
-    const response = await fetch('/phone', {
-        method: "POST",
-        body: JSON.stringify({
-            file: fileToUploadElt.value,
-            phone: phoneAddress,
-        }),
-        headers: {
-            "Content-Type": "application/json",
-        }
-    })
+    let response = null
+    try {
+        response = await fetch('/phone', {
+            method: "POST",
+            body: JSON.stringify({
+                file: fileToUploadElt.value,
+                phone: phoneAddress,
+            }),
+            headers: {
+                "Content-Type": "application/json",
+            }
+        })
+    } catch (error) {
+        console.log(`Send to phone failed: ${error.message}`)
+    }
     sendToPhoneModal.classList.remove('sending')
-    if (response.ok) {
+    if (response?.ok) {
         threeDotMenuSnapshot?.classList.remove('bi-three-dots-vertical', 'bi-arrow-repeat', 'bi-check2', 'bi-x')
         threeDotMenuSnapshot?.classList.add('bi-check2')
         bootstrap.Modal.getInstance(sendToPhoneModal)?.hide()
     } else {
         sendToPhoneModal.classList.add('send-failed')
     }
-    return response.ok
+    return response?.ok ?? false
 }

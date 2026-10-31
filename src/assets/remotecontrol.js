@@ -29,23 +29,23 @@ class RemoteControl {
     }
 
     pause() {
-        fetch("/player/pause", { method: "PUT" })
+        fetchOrReportError("Pause", "/player/pause", { method: "PUT" })
     }
 
     resume() {
-        fetch("/player/resume", { method: "PUT" })
+        fetchOrReportError("Resume", "/player/resume", { method: "PUT" })
     }
 
     seek(newPos) {
-        fetch(`/player/seek?p=${newPos}`, { method: "PUT" })
+        fetchOrReportError("Seek", `/player/seek?p=${newPos}`, { method: "PUT" })
     }
 
     setSpeed(speed) {
-        fetch(`/player/speed?v=${speed}`, { method: "PUT" })
+        fetchOrReportError("Setting speed", `/player/speed?v=${speed}`, { method: "PUT" })
     }
 
     setVolume(volume) {
-        fetch(`/player/volume?v=${volume}`, { method: "PUT" })
+        fetchOrReportError("Setting volume", `/player/volume?v=${volume}`, { method: "PUT" })
     }
 
     async updateNowPlaying() {

@@ -19,17 +19,27 @@ class BrowserPlayback {
         }
         const volume = this.getSavedVolume()
         const rate = (document.getElementById('speed-menu-button') === null ? 1 : this.getSavedPlaybackSpeed())
-        this.howl = new Howl({
+        const howl = new Howl({
             src: ['/mediafile/' + encodeURIComponent(mediaFile)],
             preload: false,
             html5: true,
             volume: volume / 100,
             rate: rate,
             onloaderror: (soundId, errorCode) => {
-                console.log("howlerjs onloaderror: " + errorCode)
+                // Discard the failed Howl, so that the next play attempt starts afresh
+                // rather than trying to resume something that never loaded
+                howl.unload()
+                if (this.howl === howl) {
+                    this.howl = null
+                    this.currentFile = null
+                    this.fetching = false
+                    windowMediaControls.showPlaybackState('stopped')
+                    windowTrackDisplay.showNoTrackPlaying()
+                }
+                showError(`Loading ${mediaFile} failed (error code ${errorCode})`)
             },
             onplayerror: (soundId, errorCode) => {
-                console.log("howlerjs reported error code " + errorCode)
+                showError(`Playing ${mediaFile} failed (error code ${errorCode})`)
             },
             onend: () => {
                 this.removeSavedPosition(this.currentFile)
@@ -45,6 +55,7 @@ class BrowserPlayback {
                 }
             },
         })
+        this.howl = howl
         this.howl.once('play', () => {
             this.fetching = false
             windowMediaControls.showPlaybackState('playing')

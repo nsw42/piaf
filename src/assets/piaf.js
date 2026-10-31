@@ -94,15 +94,19 @@ function getDataFileFromContainingTR(button) {
 }
 
 async function markFilePlayed(mediaFile) {
-    await fetch(`/mediafile/${encodeURIComponent(mediaFile)}`, { method: "DELETE" })
-        .then(() => Cookies.set(cookieNameMarkedPlayed, mediaFile, { expires: new Date(Date.now() * 1 + 2*60*1000) }))
-        .then(() => location.reload())
+    const response = await fetchOrReportError(`Marking ${mediaFile} played`, `/mediafile/${encodeURIComponent(mediaFile)}`, { method: "DELETE" })
+    if (response !== null) {
+        Cookies.set(cookieNameMarkedPlayed, mediaFile, { expires: new Date(Date.now() * 1 + 2*60*1000) })
+        location.reload()
+    }
 }
 
 async function undoMarkFilePlayed(mediaFile) {
-    await fetch(`/mediafile/${encodeURIComponent(mediaFile)}`, { method: "PATCH" })
-        .then(() => Cookies.remove(cookieNameMarkedPlayed))
-        .then(() => location.reload())
+    const response = await fetchOrReportError(`Marking ${mediaFile} unplayed`, `/mediafile/${encodeURIComponent(mediaFile)}`, { method: "PATCH" })
+    if (response !== null) {
+        Cookies.remove(cookieNameMarkedPlayed)
+        location.reload()
+    }
 }
 
 function setContentPadding() {

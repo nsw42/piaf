@@ -13,6 +13,7 @@ import (
 
 type MediaDirectory struct {
 	Root                 string
+	Parent               *MediaDirectory            // nil for the top-level directory
 	Path                 string                     // the full path
 	Leaf                 string                     // just the final element of the path
 	RelativePath         string                     // the full path relative to the root media parent directory
@@ -24,23 +25,26 @@ type MediaDirectory struct {
 	ModTime              time.Time
 }
 
-func readMediaDir(root, parent string) *MediaDirectory {
-	relativePath, err := filepath.Rel(root, parent)
+func readMediaDir(root string, parentDir *MediaDirectory, path string) *MediaDirectory {
+	relativePath, err := filepath.Rel(root, path)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	rtn := &MediaDirectory{
 		Root:           root,
-		Path:           parent, // will be initialised to a full path
-		Leaf:           filepath.Base(parent),
+		Parent:         parentDir,
+		Path:           path, // will be initialised to a full path
+		Leaf:           filepath.Base(path),
 		RelativePath:   relativePath,
 		SubDirectories: make(map[string]*MediaDirectory, 0),
 		Files:          make(map[string]*MediaFile, 0),
 		SortedFiles:    make([]*MediaFile, 0),
 	}
 
-	rtn.Refresh()
+	// The caller is responsible for adding this directory to its parent and
+	// updating the parent's totals, so only refresh this directory's own state
+	rtn.refresh()
 
 	if rtn.IsEmpty() {
 		return nil // don't bother showing empty directories
@@ -65,7 +69,20 @@ func (mediaDir *MediaDirectory) RefreshAndGetMetadata() {
 	go mediaDir.GetMediaLengths()
 }
 
+// Refresh updates the cached view of this directory (and any changed subdirectories)
+// to match the filesystem, then recalculates the total durations of all parent
+// directories up to the root
 func (mediaDir *MediaDirectory) Refresh() {
+	mediaDir.refresh()
+
+	for dir := mediaDir.Parent; dir != nil; dir = dir.Parent {
+		dir.recalculateTotalDuration()
+	}
+}
+
+// refresh updates the cached view of this directory (and any changed subdirectories),
+// including its own total duration, but does not touch its parents
+func (mediaDir *MediaDirectory) refresh() {
 	// Note that this doesn't remove the directory from its parent if it's now empty
 	// but it does remove children that are now empty
 	mediaDir.ModTime = modTime(mediaDir.Path)
@@ -75,6 +92,8 @@ func (mediaDir *MediaDirectory) Refresh() {
 		log.Println(err)
 		mediaDir.SubDirectories = make(map[string]*MediaDirectory)
 		mediaDir.Files = make(map[string]*MediaFile)
+		mediaDir.updateSortedFiles()
+		mediaDir.recalculateTotalDuration()
 		return
 	}
 
@@ -92,15 +111,14 @@ func (mediaDir *MediaDirectory) Refresh() {
 	}
 
 	for _, fileName := range subdirsDeleted {
-		mediaDir.TotalDurationSeconds -= mediaDir.SubDirectories[fileName].TotalDurationSeconds
 		delete(mediaDir.SubDirectories, fileName)
 	}
 	for _, fileName := range filesDeleted {
-		mediaDir.TotalDurationSeconds -= mediaDir.Files[fileName].DurationSeconds
 		delete(mediaDir.Files, fileName)
 	}
 
 	mediaDir.updateSortedFiles()
+	mediaDir.recalculateTotalDuration()
 }
 
 func (mediaDir *MediaDirectory) updateSortedFiles() {
@@ -128,6 +146,7 @@ func (mediaDir *MediaDirectory) refreshFile(fileName, subPath string, filesDelet
 			displayName := strings.TrimSuffix(fileName, ext)
 			relativePath := filepath.Join(mediaDir.RelativePath, fileName)
 			mediaDir.Files[fileName] = &MediaFile{
+				Parent:       mediaDir,
 				DisplayName:  displayName,
 				Path:         subPath,
 				RelativePath: relativePath,
@@ -143,7 +162,8 @@ func (mediaDir *MediaDirectory) refreshSubDir(fileName, subPath string, subdirsD
 	if found {
 		// directory already existed
 		if subdir.HasChanged() {
-			subdir.Refresh()
+			// This directory's totals are recalculated once all children are refreshed
+			subdir.refresh()
 		}
 		if subdir.IsEmpty() {
 			// it already existed, but it's now empty - leave it in subdirsDeleted,
@@ -156,7 +176,7 @@ func (mediaDir *MediaDirectory) refreshSubDir(fileName, subPath string, subdirsD
 		}
 	} else {
 		// This is a new directory
-		subdir = readMediaDir(mediaDir.Root, subPath)
+		subdir = readMediaDir(mediaDir.Root, mediaDir, subPath)
 		if subdir != nil {
 			mediaDir.SubDirectories[fileName] = subdir
 		}

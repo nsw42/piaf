@@ -10,9 +10,10 @@ import (
 )
 
 type MediaFile struct {
-	DisplayName     string // the leaf, with file extension removed, or title extracted from metadata
-	Path            string // the full path
-	RelativePath    string // the full path relative to the root media parent directory
+	Parent          *MediaDirectory // the directory containing this file
+	DisplayName     string          // the leaf, with file extension removed, or title extracted from metadata
+	Path            string          // the full path
+	RelativePath    string          // the full path relative to the root media parent directory
 	HaveMetadata    bool
 	DurationString  string // extracted from ffmpeg output, in the form hh:mm:ss
 	DurationSeconds int

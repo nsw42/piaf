@@ -1,6 +1,7 @@
 package soundtouch_wrapper
 
 /*
+#cgo pkg-config: soundtouch
 #include "soundtouch_wrapper.h"
 */
 import "C"

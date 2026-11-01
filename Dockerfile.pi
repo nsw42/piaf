@@ -12,7 +12,4 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     mkdir -p /go/src/dist; \
     cd /go/src/src; \
     go mod tidy; \
-    XXPKGCONFIG=`xx-info`-pkg-config; \
-    export CGO_CXXFLAGS="`$XXPKGCONFIG --cflags soundtouch`"; \
-    export CGO_LDFLAGS="`$XXPKGCONFIG --libs soundtouch`"; \
     xx-go build -o ../dist/piaf -tags release -ldflags "-s -w"

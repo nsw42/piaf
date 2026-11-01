@@ -33,7 +33,7 @@ func ReadMediaDir(root string) (*RootMediaDirectory, error) {
 		return nil, fmt.Errorf("played directory '%s' does not exist", root)
 	}
 
-	media.Contents = readMediaDir(media.UnplayedMediaDirectory, media.UnplayedMediaDirectory)
+	media.Contents = readMediaDir(media.UnplayedMediaDirectory, nil, media.UnplayedMediaDirectory)
 	go media.Contents.GetMediaLengths()
 
 	return media, nil
@@ -52,33 +52,12 @@ func (root *RootMediaDirectory) MarkFilePlayed(file *MediaFile) error {
 	}
 
 	// Remove the file from our records
-	pathElts := make([]string, 0)
-	filePath := file.RelativePath
-	for filePath != "" {
-		dir, leaf := filepath.Split(filePath)
-		pathElts = append(pathElts, leaf)
-		filePath = strings.TrimSuffix(dir, string(filepath.Separator))
-	}
-	if len(pathElts) == 0 {
-		return errors.New("error splitting path " + file.RelativePath)
-	}
-
-	// Collect the chain of directories from the root down to the file's parent
-	mediaDir := root.Contents
-	dirChain := []*MediaDirectory{mediaDir}
-	for _, dir := range slices.Backward(pathElts[1:]) {
-		subdir, found := mediaDir.SubDirectories[dir]
-		if !found {
-			return errors.New("directory not found in cache for " + file.RelativePath)
-		}
-		mediaDir = subdir
-		dirChain = append(dirChain, mediaDir)
-	}
-	delete(mediaDir.Files, pathElts[0])
+	mediaDir := file.Parent
+	delete(mediaDir.Files, filepath.Base(file.Path))
 	mediaDir.updateSortedFiles()
 
 	// Recalculate totals from the cached data, from the file's parent up to the root
-	for _, dir := range slices.Backward(dirChain) {
+	for dir := mediaDir; dir != nil; dir = dir.Parent {
 		dir.recalculateTotalDuration()
 	}
 	return nil
